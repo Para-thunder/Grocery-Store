@@ -9,8 +9,8 @@ const {
   updateCategory,
   deleteCategory,
   updatePayment
-} = require("../controllers/productController");
-const {
+} = require("../controllers/groceryController");
+/* const {
   getAllOrders,
   updateOrderStatus
 } = require("../controllers/orderController");
@@ -19,7 +19,7 @@ const {
   createInventory,
   updateInventory,
   deleteInventory
-} = require("../controllers/inventoryController");
+} = require("../controllers/inventoryController"); */
 
 // Product management
 router.post("/products", authenticate, adminOnly, createProduct);
@@ -31,7 +31,7 @@ router.post("/categories", authenticate, adminOnly, createCategory);
 router.patch("/categories/:id", authenticate, adminOnly, updateCategory);
 router.delete("/categories/:id", authenticate, adminOnly, deleteCategory);
 
-// Inventory management
+/* // Inventory management
 router.get("/inventories", authenticate, adminOnly, getInventories);
 router.post("/inventory", authenticate, adminOnly, createInventory);
 router.patch("/inventory/:id", authenticate, adminOnly, updateInventory);
@@ -39,7 +39,7 @@ router.delete("/inventory/:id", authenticate, adminOnly, deleteInventory);
 
 // Order management
 router.get("/admin/orders", authenticate, adminOnly, getAllOrders);
-router.patch("/admin/orders/:id/status", authenticate, adminOnly, updateOrderStatus);
+router.patch("/admin/orders/:id/status", authenticate, adminOnly, updateOrderStatus); */
 
 // Payment management
 router.patch('/admin/payment/:orderId', authenticate, adminOnly, updatePayment);

@@ -21,7 +21,7 @@ const {
   deleteInventory,  
   updateInventory,
   createInventory
-} = require("../controller/groceryController.js");
+} = require("../controllers/groceryController.js");
 
 // Product routes
 router.get("/products", getProducts);

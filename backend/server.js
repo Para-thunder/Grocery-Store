@@ -1,15 +1,17 @@
+require('dotenv').config(); // Must be first line
+
 const express = require("express");
 const sql = require("msnodesqlv8");
 const connectionString = require("./config/connectDB.js");
 const cors = require("cors");
 
-// Import the separated route files
+// Import routes
 const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
 
 const app = express();
-const serverPort = 4000;
+const serverPort = process.env.PORT || 4000; // Use from .env
 
 // Middleware
 app.use(cors());
@@ -20,32 +22,42 @@ const testConnection = () => {
   sql.open(connectionString, (err, conn) => {
     if (err) {
       console.error("Database connection failed:", err);
-      process.exit(1); // Exit if DB connection fails
+      process.exit(1);
     } else {
       console.log("Connected to database successfully!");
       console.log(`Server is running at: http://localhost:${serverPort}`);
-      conn.close(); // Close the test connection
+      if (conn) conn.close();
     }
   });
 };
 
 // API Routes
-app.use("/api/auth", authRoutes); // Authentication routes
-app.use("/api", userRoutes); // User-facing routes
-app.use("/api/admin", adminRoutes); // Admin-only routes
+app.use("/api/auth", authRoutes);
+app.use("/api", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
-  return res.json({ 
+  res.json({ 
     status: "running",
     message: "Grocery Store API is operational",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
   });
 });
 
-// 404 Handler
+// Environment check endpoint
+app.get('/env-check', (req, res) => {
+  res.json({
+    jwtSecret: process.env.JWT_SECRET ? "Loaded" : "Missing",
+    dbServer: process.env.DB_SERVER ? "Loaded" : "Missing",
+    dbName: process.env.DB_NAME ? "Loaded" : "Missing",
+    port: process.env.PORT
+  });
+});
+
+// Error handlers
 app.use((req, res) => {
-  console.log(`Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ 
     error: "Route not found",
     path: req.url,
@@ -53,7 +65,6 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err.stack);
   res.status(500).json({
@@ -64,5 +75,6 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(serverPort, () => {
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
   testConnection();
 });
