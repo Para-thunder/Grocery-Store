@@ -1,0 +1,47 @@
+/*categories.css*/
+.category-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.category-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+}
+/* You can now remove most styles since we're using MUI sx props */
+.category-grid {
+  padding: 2rem 0;
+}
+
+.category-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.back-button {
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Add this if you want a nice loading animation */
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.6; transform: scale(0.98); }
+}
+
+.loading-state {
+  animation: pulse 1.5s ease-in-out infinite;
+}

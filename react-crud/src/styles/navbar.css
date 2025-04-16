@@ -1,0 +1,32 @@
+/* Navbar base styles */
+.navbar {
+  background-color: #4B2A69; /* dark purple */
+  padding: 10px 20px;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-home,
+.navbar-link {
+  color: #ffffff; /* white text for all links */
+  text-decoration: none;
+  margin: 0 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+/* Highlighted link */
+.navbar-link.active,
+.navbar-home.active {
+  background-color: #9D6DDF; /* light purple highlight */
+  color: white;
+}
+.navbar-link:hover,
+.navbar-home:hover {
+  background-color: #7F52C5;
+}
