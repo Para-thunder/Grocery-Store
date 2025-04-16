@@ -6,6 +6,7 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  getCategoryProducts,
   getCategory,
   createCategory,
   updateCategory,
@@ -34,7 +35,7 @@ router.get("/categories", getCategory);
 router.post("/categories", createCategory);
 router.patch("/categories/:id", updateCategory);
 router.delete("/categories/:id", deleteCategory);
-
+router.get("/categories/:categoryId/products", getCategoryProducts);
 // Inventory routes
 router.get("/inventories", getInventories);
 router.post("/inventory", createInventory);

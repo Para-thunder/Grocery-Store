@@ -26,4 +26,9 @@ router.patch("/orders/:id/cancel", authenticate, cancelOrder); */
 /* router.get('/payment/:orderId', authenticate, getPayment);
 router.get('/delivery/order/:orderId', authenticate, getDelivery); */
 
+
+
+const { placeOrder } = require("../controllers/orderController");
+router.post("/orders", authenticate, placeOrder);
+
 module.exports = router;

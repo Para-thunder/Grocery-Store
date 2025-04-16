@@ -1,44 +1,46 @@
-require('dotenv').config(); // Must be first line
+require('dotenv').config(); // Must be first
 
 const express = require("express");
 const sql = require("msnodesqlv8");
-const connectionString = require("./config/connectDB.js");
 const cors = require("cors");
 
-// Import routes
+const app = express();
+const serverPort = process.env.PORT || 4000;
+const connectionString = require("./config/connectDB.js");
+
+// Routes
 const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
-
-const app = express();
-const serverPort = process.env.PORT || 4000; // Use from .env
+const groceryRouter = require("./routes/groceryRoutes.js");
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Database connection test
+// Database Connection Test
 const testConnection = () => {
   sql.open(connectionString, (err, conn) => {
     if (err) {
       console.error("Database connection failed:", err);
       process.exit(1);
     } else {
-      console.log("Connected to database successfully!");
-      console.log(`Server is running at: http://localhost:${serverPort}`);
+      console.log("✅ Connected to database successfully!");
+      console.log(`🚀 Server running at: http://localhost:${serverPort}`);
       if (conn) conn.close();
     }
   });
 };
 
-// API Routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api", groceryRouter); // ← ✅ your grocery routes restored
 
-// Health check endpoint
+// Health check
 app.get("/", (req, res) => {
-  res.json({ 
+  res.json({
     status: "running",
     message: "Grocery Store API is operational",
     timestamp: new Date().toISOString(),
@@ -46,25 +48,27 @@ app.get("/", (req, res) => {
   });
 });
 
-// Environment check endpoint
-app.get('/env-check', (req, res) => {
+// Environment check
+app.get("/env-check", (req, res) => {
   res.json({
     jwtSecret: process.env.JWT_SECRET ? "Loaded" : "Missing",
     dbServer: process.env.DB_SERVER ? "Loaded" : "Missing",
     dbName: process.env.DB_NAME ? "Loaded" : "Missing",
-    port: process.env.PORT
+    port: process.env.PORT || 4000
   });
 });
 
-// Error handlers
+// 404 Handler
 app.use((req, res) => {
-  res.status(404).json({ 
+  console.log(`Route not found: ${req.method} ${req.url}`);
+  res.status(404).json({
     error: "Route not found",
     path: req.url,
     method: req.method
   });
 });
 
+// 500 Handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err.stack);
   res.status(500).json({
@@ -73,7 +77,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+// Start Server
 app.listen(serverPort, () => {
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
   testConnection();
