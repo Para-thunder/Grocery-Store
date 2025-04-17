@@ -1,84 +1,45 @@
-require('dotenv').config(); // Must be first
-
+require('dotenv').config();
 const express = require("express");
-const sql = require("msnodesqlv8");
 const cors = require("cors");
+const connectDB = require("./config/connectDB"); // Import the connectDB function
+
+const { sequelize } = require("./models/Index.js"); // Import sequelize instance
 
 const app = express();
-const serverPort = process.env.PORT || 4000;
-const connectionString = require("./config/connectDB.js");
+const port = process.env.PORT || 4000;
 
-// Routes
-const authRoutes = require("./routes/authRoutes.js");
-const userRoutes = require("./routes/userRoutes.js");
-const adminRoutes = require("./routes/adminRoutes.js");
-const groceryRouter = require("./routes/groceryRoutes.js");
+// Routes imports
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const groceryRoutes = require("./routes/groceryRoutes");
+const cartRoutes = require("./routes/cartRoutes"); // Add this line
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Database Connection Test
-const testConnection = () => {
-  sql.open(connectionString, (err, conn) => {
-    if (err) {
-      console.error("Database connection failed:", err);
-      process.exit(1);
-    } else {
-      console.log("✅ Connected to database successfully!");
-      console.log(`🚀 Server running at: http://localhost:${serverPort}`);
-      if (conn) conn.close();
-    }
-  });
-};
-
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api", groceryRouter); // ← ✅ your grocery routes restored
+app.use("/api/grocery", groceryRoutes);
+app.use("/api/cart", cartRoutes); // Add this line
 
-// Health check
-app.get("/", (req, res) => {
-  res.json({
-    status: "running",
-    message: "Grocery Store API is operational",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development"
-  });
-});
+// Test database connection
+const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Database connection established");
+    console.log(`🚀 Server running on http://localhost:${port}`);
+  } catch (error) {
+    console.error("❌ Database connection failed:", error);
+    process.exit(1);
+  }
+};
 
-// Environment check
-app.get("/env-check", (req, res) => {
-  res.json({
-    jwtSecret: process.env.JWT_SECRET ? "Loaded" : "Missing",
-    dbServer: process.env.DB_SERVER ? "Loaded" : "Missing",
-    dbName: process.env.DB_NAME ? "Loaded" : "Missing",
-    port: process.env.PORT || 4000
-  });
-});
-
-// 404 Handler
-app.use((req, res) => {
-  console.log(`Route not found: ${req.method} ${req.url}`);
-  res.status(404).json({
-    error: "Route not found",
-    path: req.url,
-    method: req.method
-  });
-});
-
-// 500 Handler
-app.use((err, req, res, next) => {
-  console.error("Server error:", err.stack);
-  res.status(500).json({
-    error: "Internal Server Error",
-    message: err.message || "Something went wrong"
-  });
-});
-
-// Start Server
-app.listen(serverPort, () => {
+// Start server
+app.listen(port, async () => {
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-  testConnection();
+  await testConnection();
 });

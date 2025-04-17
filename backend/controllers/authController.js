@@ -1,98 +1,82 @@
-// controllers/authController.js
-const sql = require("msnodesqlv8");
+const CustomerService = require('../services/customerService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const connectionString = require("../config/connectDB");
 
-// User registration
 const register = async (req, res) => {
-  const { email, password, name, address } = req.body;
-
-  if (!email || !password || !name || !address) {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
-
   try {
-    const checkQuery = "SELECT email FROM Customers WHERE email = ?";
-    const existingUser = await new Promise((resolve, reject) => {
-      sql.query(connectionString, checkQuery, [email], (err, rows) => {
-        if (err) reject(err);
-        resolve(rows);
-      });
-    });
-
-    if (existingUser.length > 0) {
-      return res.status(409).json({ error: 'Email already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const insertQuery = `
-      INSERT INTO Customers (email, password_hash, name, address, role)
-      VALUES (?, ?, ?, ?, 'customer')
-    `;
+    const { name, email, password, address } = req.body;
     
-    await new Promise((resolve, reject) => {
-      sql.query(connectionString, insertQuery, 
-        [email, hashedPassword, name, address], 
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        });
+    // Hash password (using bcrypt)
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const newCustomer = await CustomerService.createCustomer({
+      name,
+      email,
+      passwordHash: hashedPassword,
+      address
     });
 
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ error: 'Registration failed' });
+    res.status(201).json({
+      customerId: newCustomer.customer_id,
+      name: newCustomer.name,
+      email: newCustomer.email
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };
 
-// User login
 const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required' });
-  }
-
   try {
-    const query = "SELECT * FROM Customers WHERE email = ?";
-    const users = await new Promise((resolve, reject) => {
-      sql.query(connectionString, query, [email], (err, rows) => {
-        if (err) reject(err);
-        resolve(rows);
-      });
-    });
+    const { email, password } = req.body;
 
-    if (users.length === 0) {
+    // Find customer by email
+    const customer = await CustomerService.findCustomerByEmail(email);
+    
+    if (!customer) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = users[0];
-    const validPassword = await bcrypt.compare(password, user.password_hash);
-    if (!validPassword) {
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, customer.password_hash);
+    if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Create JWT token
     const token = jwt.sign(
-      { userId: user.customer_id, email: user.email, role: user.role },
+      { customerId: customer.customer_id, email: customer.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
     res.json({ 
       token,
-      user: {
-        id: user.customer_id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      }
+      customerId: customer.customer_id,
+      name: customer.name,
+      email: customer.email
     });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = { register, login };
+const getCustomerProfile = async (req, res) => {
+  try {
+    const customer = await CustomerService.findCustomerByEmail(req.customer.email);
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    res.json(customer);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  getCustomerProfile
+};

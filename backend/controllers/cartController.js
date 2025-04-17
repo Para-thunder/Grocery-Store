@@ -1,198 +1,127 @@
-const sql = require('mssql');
-const connectionString = require('../config/connectDB');
+const { Cart, Product } = require('../models/Index');
 
-// Helper function to calculate cart total
-const calculateTotalPrice = (cartItems) => {
-  return cartItems.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
-};
-
-// Add item to cart
-const addToCart = async (req, res) => {
+const getFullCart = async (customerId) => {
   try {
-    const { product_id, quantity } = req.body;
-    const userId = req.user?.user_id || 1;
-
-    // 1. Verify product exists and get price
-    const product = await getProductDetails(product_id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    // 2. Check current cart item
-    const cartItem = await getCartItem(userId, product_id);
-    
-    // 3. Add or update item in cart
-    if (cartItem) {
-      await updateCartItem(userId, product_id, cartItem.quantity + quantity);
-    } else {
-      await addNewCartItem(userId, product_id, quantity);
-    }
-
-    // 4. Return updated cart
-    const updatedCart = await getFullCart(userId);
-    res.json({
-      message: "Item added to cart",
-      cart: updatedCart.items,
-      total: updatedCart.total
+    return await Cart.findAll({ 
+      where: { user_id: customerId },
+      include: [{
+        model: Product,
+        attributes: ['product_id', 'name', 'price', 'description', 'stock_quantity']
+      }],
+      attributes: ['cart_id', 'quantity', 'added_at'],
+      raw: false // Ensure we get full model instances
     });
-
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error('Error fetching cart:', error);
+    throw error;
   }
 };
 
-// Update cart item quantity
-const updateCart = async (req, res) => {
-  try {
-    const { product_id, quantity } = req.body;
-    const userId = req.user?.user_id || 1;
-
-    // Validate quantity
-    if (quantity <= 0) {
-      return res.status(400).json({ message: "Quantity must be greater than 0" });
-    }
-
-    // Check if item exists in cart
-    const cartItem = await getCartItem(userId, product_id);
-    if (!cartItem) {
-      return res.status(404).json({ message: "Item not found in cart" });
-    }
-
-    // Update quantity
-    await updateCartItem(userId, product_id, quantity);
-
-    // Return updated cart
-    const updatedCart = await getFullCart(userId);
-    res.json({
-      message: "Cart updated",
-      cart: updatedCart.items,
-      total: updatedCart.total
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Get full cart with calculated total
 const getCart = async (req, res) => {
   try {
-    const userId = req.user?.user_id || 1;
-    const cart = await getFullCart(userId);
-    res.json(cart);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Remove item from cart
-const removeFromCart = async (req, res) => {
-  try {
-    const { product_id } = req.body;
-    const userId = req.user?.user_id || 1;
-
-    const deleteQuery = `DELETE FROM Cart WHERE user_id = @userId AND product_id = @productId`;
-    await sql.connect(connectionString);
-    const request = new sql.Request();
-    request.input('userId', sql.Int, userId);
-    request.input('productId', sql.Int, product_id);
+    const customerId = req.customer.customerId;
+    const cartItems = await getFullCart(customerId);
     
-    const result = await request.query(deleteQuery);
-    
-    if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ message: "Item not found in cart" });
+    // Handle empty cart case
+    if (!cartItems || cartItems.length === 0) {
+      return res.json({
+        customerId,
+        items: [],
+        itemCount: 0,
+        total: 0
+      });
     }
 
-    const updatedCart = await getFullCart(userId);
-    res.json({
-      message: "Item removed from cart",
-      cart: updatedCart.items,
-      total: updatedCart.total
-    });
+    const response = {
+      customerId,
+      items: cartItems.map(item => ({
+        cartId: item.cart_id,
+        product: {
+          productId: item.Product.product_id,
+          name: item.Product.name,
+          price: item.Product.price,
+          description: item.Product.description,
+          stock: item.Product.stock_quantity
+        },
+        quantity: item.quantity,
+        addedAt: item.added_at
+      })),
+      itemCount: cartItems.length,
+      total: cartItems.reduce((sum, item) => sum + (item.Product.price * item.quantity), 0)
+    };
 
+    res.json(response);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Get cart error:", error);
+    res.status(500).json({ error: 'Failed to get cart', details: error.message });
   }
 };
 
-// ==================== Helper Functions ====================
+const addToCart = async (req, res) => {
+  const transaction = await sequelize.transaction(); // Start transaction
+  try {
+    const { productId, quantity = 1 } = req.body;
+    const customerId = req.customer.customerId;
 
-const getProductDetails = async (productId) => {
-  const query = `SELECT product_id, price FROM Products WHERE product_id = @productId`;
-  await sql.connect(connectionString);
-  const request = new sql.Request();
-  request.input('productId', sql.Int, productId);
-  const result = await request.query(query);
-  return result.recordset[0] || null;
+    if (!productId || quantity < 1) {
+      await transaction.rollback();
+      return res.status(400).json({ error: 'Invalid request data' });
+    }
+
+    // Check product exists and has stock (with lock for concurrency)
+    const product = await Product.findByPk(productId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE
+    });
+
+    if (!product) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    if (product.stock_quantity < quantity) {
+      await transaction.rollback();
+      return res.status(400).json({ 
+        error: 'Insufficient stock',
+        available: product.stock_quantity
+      });
+    }
+
+    // Add or update cart item
+    const [cartItem, created] = await Cart.findOrCreate({
+      where: { user_id: customerId, product_id: productId },
+      defaults: { quantity },
+      transaction
+    });
+
+    if (!created) {
+      cartItem.quantity += quantity;
+      await cartItem.save({ transaction });
+    }
+
+    // Update product stock
+    product.stock_quantity -= quantity;
+    await product.save({ transaction });
+
+    await transaction.commit();
+
+    res.status(201).json({
+      message: 'Product added to cart',
+      cartItem: {
+        cartId: cartItem.cart_id,
+        productId: cartItem.product_id,
+        quantity: cartItem.quantity
+      },
+      remainingStock: product.stock_quantity
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Add to cart error:", error);
+    res.status(500).json({ 
+      error: 'Failed to add to cart',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 };
 
-const getCartItem = async (userId, productId) => {
-  const query = `SELECT * FROM Cart WHERE user_id = @userId AND product_id = @productId`;
-  await sql.connect(connectionString);
-  const request = new sql.Request();
-  request.input('userId', sql.Int, userId);
-  request.input('productId', sql.Int, productId);
-  const result = await request.query(query);
-  return result.recordset[0] || null;
-};
-
-const addNewCartItem = async (userId, productId, quantity) => {
-  const query = `
-    INSERT INTO Cart (user_id, product_id, quantity)
-    VALUES (@userId, @productId, @quantity)
-  `;
-  await sql.connect(connectionString);
-  const request = new sql.Request();
-  request.input('userId', sql.Int, userId);
-  request.input('productId', sql.Int, productId);
-  request.input('quantity', sql.Int, quantity);
-  await request.query(query);
-};
-
-const updateCartItem = async (userId, productId, quantity) => {
-  const query = `
-    UPDATE Cart SET quantity = @quantity
-    WHERE user_id = @userId AND product_id = @productId
-  `;
-  await sql.connect(connectionString);
-  const request = new sql.Request();
-  request.input('userId', sql.Int, userId);
-  request.input('productId', sql.Int, productId);
-  request.input('quantity', sql.Int, quantity);
-  await request.query(query);
-};
-
-const getFullCart = async (userId) => {
-  const query = `
-    SELECT 
-      c.product_id, 
-      p.name, 
-      p.price, 
-      p.image_url,
-      c.quantity, 
-      (p.price * c.quantity) as subtotal
-    FROM Cart c
-    JOIN Products p ON c.product_id = p.product_id
-    WHERE c.user_id = @userId
-  `;
-  
-  await sql.connect(connectionString);
-  const request = new sql.Request();
-  request.input('userId', sql.Int, userId);
-  const result = await request.query(query);
-  
-  return {
-    items: result.recordset,
-    total: calculateTotalPrice(result.recordset)
-  };
-};
-
-module.exports = {
-  addToCart,
-  getCart,
-  updateCart,
-  removeFromCart,
-  calculateTotalPrice
-};
+module.exports = { getCart, addToCart };
