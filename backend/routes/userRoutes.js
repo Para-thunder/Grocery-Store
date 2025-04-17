@@ -22,9 +22,11 @@ const {
 } = require("../controllers/orderController");
 
 const {
-  getCart,
   addToCart,
-  removeFromCart
+  getCart,
+  updateCart,
+  removeFromCart,
+  calculateTotalPrice
 } = require("../controllers/cartController");
 
 // ----------------------------
@@ -40,7 +42,7 @@ router.get("/categories/:categoryId/products", getCategoryProducts);
 // ----------------------------
 router.get("/cart", authenticate, getCart);
 router.post("/cart", authenticate, addToCart);
-//router.put("/cart/:itemId", authenticateUser, updateCart);
+router.put("/cart/:itemId", authenticate, updateCart);
 router.delete("/cart/:itemId", authenticate, removeFromCart);
 
 // ----------------------------
