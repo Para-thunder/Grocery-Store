@@ -1,13 +1,10 @@
 const sql = require('mssql');
 
-exports.addToCart = (req, res) => {
+const addToCart = (req, res) => {
     const { product_id, quantity } = req.body;
-    const userId = req.user?.user_id || 1; // Replace with actual auth
+    const userId = req.user?.user_id || 1;
     
-    // Check if item already exists in cart
     const checkSql = `SELECT * FROM Cart WHERE user_id = ? AND product_id = ?`;
-    
-    // Add or update item in cart
     const upsertSql = `
         IF EXISTS (SELECT 1 FROM Cart WHERE user_id = ? AND product_id = ?)
             UPDATE Cart SET quantity = quantity + ? 
@@ -34,10 +31,10 @@ exports.addToCart = (req, res) => {
     });
 };
 
-exports.getCart = (req, res) => {
+const getCart = (req, res) => {
     const userId = req.user?.user_id || 1;
     
-    const sql = `
+    const cartSql = `
         SELECT c.product_id, p.name, p.price, c.quantity, (p.price * c.quantity) as subtotal
         FROM Cart c
         JOIN Products p ON c.product_id = p.product_id
@@ -47,7 +44,7 @@ exports.getCart = (req, res) => {
     sql.connect(connectionString, (err, conn) => {
         if (err) return res.status(500).json({ message: "DB error", err });
         
-        conn.query(sql, [userId], (err, result) => {
+        conn.query(cartSql, [userId], (err, result) => {
             if (err) return res.status(500).json({ message: "Failed to get cart", err });
             
             const total = result.recordset.reduce((sum, item) => sum + item.subtotal, 0);
@@ -56,18 +53,24 @@ exports.getCart = (req, res) => {
     });
 };
 
-exports.removeFromCart = (req, res) => {
+const removeFromCart = (req, res) => {
     const { product_id } = req.body;
     const userId = req.user?.user_id || 1;
     
-    const sql = `DELETE FROM Cart WHERE user_id = ? AND product_id = ?`;
+    const deleteSql = `DELETE FROM Cart WHERE user_id = ? AND product_id = ?`;
     
     sql.connect(connectionString, (err, conn) => {
         if (err) return res.status(500).json({ message: "DB error", err });
         
-        conn.query(sql, [userId, product_id], (err, result) => {
+        conn.query(deleteSql, [userId, product_id], (err, result) => {
             if (err) return res.status(500).json({ message: "Failed to remove item", err });
             res.json({ message: "Item removed from cart" });
         });
     });
 };
+
+module.exports = {      
+    addToCart,
+    getCart,
+    removeFromCart
+};  

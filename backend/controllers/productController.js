@@ -169,11 +169,36 @@ const deleteProduct = async (req, res) => {
     return res.status(500).send("Error: " + err.message);
   }
 };
+const getProductById = (req, res) => {
+  const productId = req.params.id;
+  
+  const productSql = `
+      SELECT p.*, c.category_name 
+      FROM Products p
+      JOIN Categories c ON p.category_id = c.category_id
+      WHERE p.product_id = ?
+  `;
+  
+  sql.connect(connectionString, (err, conn) => {
+      if (err) return res.status(500).json({ message: "DB error", err });
+      
+      conn.query(productSql, [productId], (err, result) => {
+          if (err) return res.status(500).json({ message: "Failed to get product", err });
+          
+          if (result.recordset.length === 0) {
+              return res.status(404).json({ message: "Product not found" });
+          }
+          
+          res.json(result.recordset[0]);
+      });
+  });
+};
 
+// Export all functions as an object
 module.exports = {
-    createProduct,
-    getProducts,
-    updateProduct,
-    deleteProduct
-    // ... other exports
-  };
+  deleteProduct,
+  updateProduct,
+  createProduct,
+  getProducts,
+  getProductById
+};

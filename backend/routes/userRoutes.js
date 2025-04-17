@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { authenticateUser } = require("../middlewares/authMiddleware");
+const { authenticate } = require("../middlewares/authMiddleware");
 
 // Import all controller functions needed for the store frontend
 const {
@@ -24,7 +24,6 @@ const {
 const {
   getCart,
   addToCart,
-  updateCart,
   removeFromCart
 } = require("../controllers/cartController");
 
@@ -39,17 +38,17 @@ router.get("/categories/:categoryId/products", getCategoryProducts);
 // ----------------------------
 // Shopping Cart
 // ----------------------------
-router.get("/cart", authenticateUser, getCart);
-router.post("/cart", authenticateUser, addToCart);
-router.put("/cart/:itemId", authenticateUser, updateCart);
-router.delete("/cart/:itemId", authenticateUser, removeFromCart);
+router.get("/cart", authenticate, getCart);
+router.post("/cart", authenticate, addToCart);
+//router.put("/cart/:itemId", authenticateUser, updateCart);
+router.delete("/cart/:itemId", authenticate, removeFromCart);
 
 // ----------------------------
 // Order Management
 // ----------------------------
-router.get("/orders", authenticateUser, getAllOrders);
-router.post("/orders", authenticateUser, createOrder);
-router.get("/orders/:id", authenticateUser, getOrderDetails);
-router.patch("/orders/:id/status", authenticateUser, updateOrderStatus);
+router.get("/orders", authenticate, getAllOrders);
+router.post("/orders", authenticate, createOrder);
+router.get("/orders/:id", authenticate, getOrderDetails);
+router.patch("/orders/:id/status", authenticate, updateOrderStatus);
 
 module.exports = router;
