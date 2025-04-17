@@ -1,34 +1,55 @@
 const express = require("express");
 const router = express.Router();
-const { authenticate } = require("../middlewares/authMiddleware");
+
+const { authenticateUser } = require("../middlewares/authMiddleware");
+
+// Import all controller functions needed for the store frontend
 const {
   getProducts,
+  getProductById
 } = require("../controllers/productController");
+
 const {
-    getCategory,
-  } = require("../controllers/categoryController");
-/* const {
-  getUserOrders,
+  getCategory,
+  getCategoryProducts
+} = require("../controllers/categoryController");
+
+const {
   createOrder,
-  cancelOrder
-} = require("../controllers/orderController"); */
+  getAllOrders,
+  getOrderDetails,
+  updateOrderStatus
+} = require("../controllers/orderController");
 
-// Product browsing
+const {
+  getCart,
+  addToCart,
+  updateCart,
+  removeFromCart
+} = require("../controllers/cartController");
+
+// ----------------------------
+// Product Browsing
+// ----------------------------
 router.get("/products", getProducts);
+router.get("/products/:id", getProductById);
 router.get("/categories", getCategory);
+router.get("/categories/:categoryId/products", getCategoryProducts);
 
-// Order management
-/* router.get("/orders", authenticate, getUserOrders);
-router.post("/orders", authenticate, createOrder);
-router.patch("/orders/:id/cancel", authenticate, cancelOrder); */
+// ----------------------------
+// Shopping Cart
+// ----------------------------
+router.get("/cart", authenticateUser, getCart);
+router.post("/cart", authenticateUser, addToCart);
+router.put("/cart/:itemId", authenticateUser, updateCart);
+router.delete("/cart/:itemId", authenticateUser, removeFromCart);
 
-// Payment & delivery
-/* router.get('/payment/:orderId', authenticate, getPayment);
-router.get('/delivery/order/:orderId', authenticate, getDelivery); */
-
-
-
-const { placeOrder } = require("../controllers/orderController");
-router.post("/orders", authenticate, placeOrder);
+// ----------------------------
+// Order Management
+// ----------------------------
+router.get("/orders", authenticateUser, getAllOrders);
+router.post("/orders", authenticateUser, createOrder);
+router.get("/orders/:id", authenticateUser, getOrderDetails);
+router.patch("/orders/:id/status", authenticateUser, updateOrderStatus);
 
 module.exports = router;

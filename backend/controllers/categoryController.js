@@ -92,11 +92,46 @@ const getCategory = (req, res) => {
       return res.status(500).send("Error: " + error.message);
     }
   };
-  
+  // Get products of a specific category
+const getCategoryProducts = (req, res) => {
+  const { categoryId } = req.params;
+
+  if (!categoryId) {
+    return res.status(400).send("Category ID is required.");
+  }
+
+  const query = `
+  SELECT 
+    p.name,
+    p.product_id,
+    p.description,
+    p.price,
+    p.category_id,
+    i.available_quantity AS stock_quantity
+  FROM Products p
+  JOIN Categories c ON p.category_id = c.category_id
+  JOIN Inventory i ON p.product_id = i.product_id
+  WHERE p.category_id = ${categoryId}
+`;
+
+
+  try {
+    sql.query(connectionString, query, (err, rows) => {
+      if (err) {
+        return res.status(500).send("Error fetching category products: " + err.message);
+      }
+      return res.json(rows);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).send("Error: " + error.message);
+  }
+};
   module.exports = {
     createCategory,
     getCategory,
     updateCategory,
-    deleteCategory
+    deleteCategory,
+    getCategoryProducts
     // ... other exports
   };

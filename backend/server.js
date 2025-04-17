@@ -13,7 +13,7 @@ const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
 const groceryRouter = require("./routes/groceryRoutes.js");
-
+const cartRoutes = require("./routes/cartRoutes");
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -37,7 +37,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", groceryRouter); // ← ✅ your grocery routes restored
-
+app.use('/api/cart', cartRoutes);
+app.use('/api/order', orderRoutes);
 // Health check
 app.get("/", (req, res) => {
   res.json({
