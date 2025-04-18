@@ -4,39 +4,51 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
-    customer_id: {
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'Customers',
-        key: 'customer_id'
-      }
+        key: 'customer_id',
+      },
     },
-    created_at: {
+    product_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Products',
+        key: 'product_id',
+      },
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+    },
+    added_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-      allowNull: false
     },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: false
-    }
   }, {
-    tableName: 'Carts',
-    timestamps: false
+    tableName: 'Cart', // Match the SQL table name
+    timestamps: false,
+    uniqueKeys: {
+      unique_cart: {
+        fields: ['user_id', 'product_id'], // Match the unique constraint
+      },
+    },
   });
 
   Cart.associate = (models) => {
     Cart.belongsTo(models.Customer, {
-      foreignKey: 'customer_id',
-      as: 'customer'
+      foreignKey: 'user_id',
+      as: 'customer',
     });
-    Cart.hasMany(models.CartItem, {
-      foreignKey: 'cart_id',
-      as: 'items'
+    Cart.belongsTo(models.Product, {
+      foreignKey: 'product_id',
+      as: 'product',
     });
   };
 

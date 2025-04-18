@@ -23,7 +23,7 @@ const sequelize = new Sequelize({
       useUTC: false         // Match your local timezone
     },
   },
-  logging: config.DB_LOG ? console.log : false
+  logging:console.log 
 });
 // Model loading and associations remain the same
 fs.readdirSync(__dirname)
@@ -50,5 +50,6 @@ db.Sequelize = Sequelize;
     process.exit(1);
   }
 })();
+
 
 module.exports = db;

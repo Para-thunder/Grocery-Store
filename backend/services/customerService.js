@@ -63,11 +63,12 @@ class CustomerService {
       const options = {
         where: { email: email.toLowerCase() },
         attributes: {
-          exclude: ['password_hash'] // Never return password hash
+          //exclude: ['password_hash'] // Never return password hash
+          exclude: [] 
         }
       };
 
-      if (includeCart) {
+   if (includeCart) {
         options.include = [{
           association: 'carts',
           attributes: ['cart_id', 'product_id', 'quantity', 'added_at']

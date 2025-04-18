@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false
       },
-      name: {
+      category_name: {
         type: DataTypes.STRING(100),
         allowNull: false,
         unique: true,
@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ['name']
+          fields: ['category_name']
         },
         {
           fields: ['parent_id']
