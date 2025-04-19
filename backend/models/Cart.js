@@ -29,11 +29,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     added_at: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      defaultValue: sequelize.literal('GETDATE()'), // Use SQL Server's GETDATE() function
+      allowNull: false,
     },
   }, {
     tableName: 'Cart', // Match the SQL table name
-    timestamps: false,
+    timestamps: false, // Disable Sequelize's automatic timestamps
     uniqueKeys: {
       unique_cart: {
         fields: ['user_id', 'product_id'], // Match the unique constraint
@@ -54,3 +55,4 @@ module.exports = (sequelize, DataTypes) => {
 
   return Cart;
 };
+

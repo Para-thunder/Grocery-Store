@@ -45,27 +45,3 @@ router.patch("/admin/orders/:id/status", authenticate, adminOnly, updateOrderSta
 router.patch('/admin/payment/:orderId', authenticate, adminOnly, updatePayment);
 
  module.exports = router;
-/*
-const express = require("express");
-const router = express.Router();
-const adminController = require("../controllers/adminController");
-const { isAdmin } = require("../middlewares/authMiddleware");
-
-// Protect all admin routes
-router.use(isAdmin);
-
-// Dashboard
-router.get("/dashboard", adminController.getDashboardStats);
-
-// Product Management
-router.get("/products", adminController.getAllProducts);
-router.put("/products/:id", adminController.updateProduct);
-
-// Order Management
-router.put("/orders/:id/status", adminController.updateOrderStatus);
-
-// User Management
-router.get("/users", adminController.getAllUsers);
-router.patch("/users/:id/admin", adminController.toggleAdminStatus);
-
-module.exports = router; */

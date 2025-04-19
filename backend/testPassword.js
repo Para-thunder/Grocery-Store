@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 
 const plainPassword = 'customer123'; // The password provided in the request
-const hashedPassword = '$2b$10$KgaHIpa/0FrEQwVdNIX5KOhGpvLnxrXHtBkZtNHIl32i4SuH.6Nxu'; // Replace with the hash from the database
+const hashedPassword = '$2b$10$B/OjUyoKHHuBN0yvlqvk0OHg3v0esP3FnXIDg/AWh/nci3F.9NusG'; // Replace with the hash from the database
 
 bcrypt.compare(plainPassword, hashedPassword, (err, result) => {
   if (err) {
