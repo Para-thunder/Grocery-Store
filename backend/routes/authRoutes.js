@@ -5,6 +5,6 @@ const { login, register,getCustomerProfile } = require("../controllers/authContr
 
 router.post("/login", login);
 router.post("/register", register);
-router.get("profile",authenticate,getCustomerProfile);
+router.get("/profile",authenticate,getCustomerProfile);
 
 module.exports = router;

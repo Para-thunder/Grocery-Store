@@ -1,12 +1,17 @@
 const sql = require("msnodesqlv8");
 const connectionString = require("../config/connectDB");
-
+const Product = require("../models/Product"); // Adjust the path to your Product model
 const getProducts = (req, res) => {
+  const { page = 1, limit = 10 } = req.query; // Default to page 1, 10 items per page
+  const offset = (page - 1) * limit;
+
   const query = `
     SELECT p.*, c.category_name, i.available_quantity 
     FROM Products p
     JOIN Categories c ON p.category_id = c.category_id
     JOIN Inventory i ON p.product_id = i.product_id
+    ORDER BY p.product_id
+    OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
   `;
 
   try {
