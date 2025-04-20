@@ -47,6 +47,7 @@ class CustomerService {
   
       throw new Error(`Failed to create customer: ${error.message}`);
     }
+    
   }
 
   /**

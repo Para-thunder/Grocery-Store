@@ -1,8 +1,25 @@
 const CustomerService = require('../services/customerService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { createCustomer } = require('./customerController'); // Import the createCustomer function
 
 const register = async (req, res) => {
+  try {
+    const { name, email, password, address, role } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !password || !address) {
+      return res.status(400).json({ error: 'All required fields must be provided' });
+    }
+
+    // Call the createCustomer function to insert the customer into the database
+    await createCustomer(req, res);
+  } catch (error) {
+    console.error('Error during registration:', error);
+    res.status(500).json({ error: 'Failed to register customer', details: error.message });
+  }
+};
+/* const register = async (req, res) => {
   try {
     const { name, email, password, address } = req.body;
 
@@ -32,7 +49,7 @@ const register = async (req, res) => {
     console.error('Error during registration:', error);
     res.status(400).json({ error: error.message });
   }
-};
+}; */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;

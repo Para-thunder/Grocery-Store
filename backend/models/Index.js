@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { Sequelize } = require('sequelize');
 const config = require('../config/connectDB');
+console.log(`Sequelize is connected to database: ${config.DB_NAME} on host: ${config.DB_HOST}`);
 console.log("Database Configuration:");
 console.log("DB_HOST:", config.DB_HOST);
 console.log("DB_NAME:", config.DB_NAME);
