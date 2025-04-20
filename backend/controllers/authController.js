@@ -5,27 +5,34 @@ const jwt = require('jsonwebtoken');
 const register = async (req, res) => {
   try {
     const { name, email, password, address } = req.body;
-    
-    // Hash password (using bcrypt)
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
+
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+
+    // Create a new customer
     const newCustomer = await CustomerService.createCustomer({
       name,
       email,
-      passwordHash: hashedPassword,
-      address
+      password,
+      address,
     });
 
     res.status(201).json({
       customerId: newCustomer.customer_id,
       name: newCustomer.name,
-      email: newCustomer.email
+      email: newCustomer.email,
     });
   } catch (error) {
+    console.error('Error during registration:', error);
     res.status(400).json({ error: error.message });
   }
 };
-
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;

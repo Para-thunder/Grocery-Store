@@ -10,6 +10,14 @@
   align-items: center;
 }
 
+/* Links container for Products, Categories, Cart, and User Icon */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  flex-grow: 1; /* Allow links to take up available space */
+  justify-content: flex-end; /* Push links to the right */
+}
+
 .navbar-home,
 .navbar-link {
   color: #ffffff; /* white text for all links */
@@ -26,7 +34,48 @@
   background-color: #9D6DDF; /* light purple highlight */
   color: white;
 }
+
 .navbar-link:hover,
 .navbar-home:hover {
   background-color: #7F52C5;
+}
+
+/* User icon styles */
+.navbar-user {
+  position: relative;
+  cursor: pointer;
+  margin-left: 20px; /* Add spacing between the cart and user icon */
+}
+
+.user-icon {
+  color: #ffffff; /* White icon */
+  font-size: 1.5rem;
+  transition: color 0.3s;
+}
+
+.user-icon:hover {
+  color: #9D6DDF; /* Light purple on hover */
+}
+
+/* Dropdown menu styles */
+.user-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: #4B2A69; /* Dark purple */
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-link {
+  display: block;
+  color: #ffffff; /* White text */
+  text-decoration: none;
+  padding: 10px 15px;
+  transition: background-color 0.3s;
+}
+
+.dropdown-link:hover {
+  background-color: #7F52C5; /* Light purple on hover */
 }

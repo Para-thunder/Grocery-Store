@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     address: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
       validate: {
         notEmpty: {
           msg: 'Address cannot be empty'

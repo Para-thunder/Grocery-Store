@@ -9,44 +9,42 @@ class CustomerService {
   static async createCustomer(customerData) {
     try {
       // Validate required fields
-      if (!customerData.email || !customerData.password) {
-        throw new Error('Email and password are required');
+      if (!customerData.name || !customerData.email || !customerData.password || !customerData.address) {
+        throw new Error('Name, email, password, and address are required');
       }
-
+  
       // Hash password
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(customerData.password, saltRounds);
-
+  
+      // Create a new customer
       const newCustomer = await Customer.create({
         name: customerData.name,
-        email: customerData.email.toLowerCase(), // Normalize email
+        email: customerData.email.toLowerCase(),
         password_hash: passwordHash,
         address: customerData.address,
         role: customerData.role || 'customer',
-        created_at: new Date()
+        created_at: new Date(),
       });
-
-      // Return customer data without sensitive information
+  
       return {
         customer_id: newCustomer.customer_id,
         name: newCustomer.name,
         email: newCustomer.email,
         address: newCustomer.address,
         role: newCustomer.role,
-        created_at: newCustomer.created_at
+        created_at: newCustomer.created_at,
       };
-
     } catch (error) {
       if (error instanceof ValidationError) {
-        // Handle Sequelize validation errors
-        const messages = error.errors.map(err => err.message);
+        const messages = error.errors.map((err) => err.message);
         throw new Error(`Validation error: ${messages.join(', ')}`);
       }
-      
+  
       if (error.name === 'SequelizeUniqueConstraintError') {
         throw new Error('Email address already in use');
       }
-
+  
       throw new Error(`Failed to create customer: ${error.message}`);
     }
   }
