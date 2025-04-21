@@ -24,14 +24,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true
       },
-      parent_id: {
+      /*parent_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
           model: 'Categories',
           key: 'category_id'
         }
-      },
+      },*/
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
@@ -54,10 +54,10 @@ module.exports = (sequelize, DataTypes) => {
         {
           unique: true,
           fields: ['category_name']
-        },
+        }/*,
         {
           fields: ['parent_id']
-        }
+        }*/
       ]
     });
   
@@ -67,10 +67,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'parent',
         foreignKey: 'parent_id'
       });
-      Category.hasMany(models.Category, {
+     /* Category.hasMany(models.Category, {
         as: 'children',
         foreignKey: 'parent_id'
-      });
+      });*/
   
       // Relationship with products
       Category.hasMany(models.Product, {
