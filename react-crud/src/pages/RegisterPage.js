@@ -1,6 +1,7 @@
 // src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/login-register.css';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -12,63 +13,50 @@ const RegisterPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Basic validation
     if (password !== confirmPassword) {
       setErrorMessage('Passwords do not match!');
       return;
     }
-
-    // Add your registration logic here (e.g., make an API call)
+    // Save credentials to localStorage
+    localStorage.setItem('email', email);
+    localStorage.setItem('password', password);
     console.log('User Registered:', { email, password });
-
-    // Redirect after successful registration (for now, we'll just navigate to the login page)
     navigate('/login');
   };
 
   return (
-    <div className="register-page">
-      <h2>Sign Up</h2>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2 className="auth-title">Sign Up</h2>
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
-            id="email"
-            name="email"
+            placeholder="Email"
+            className="auth-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-        </div>
-
-        <div>
-          <label htmlFor="password">Password</label>
           <input
             type="password"
-            id="password"
-            name="password"
+            placeholder="Password"
+            className="auth-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-        </div>
-
-        <div>
-          <label htmlFor="confirmPassword">Confirm Password</label>
           <input
             type="password"
-            id="confirmPassword"
-            name="confirmPassword"
+            placeholder="Confirm Password"
+            className="auth-input"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-        </div>
-
-        <button type="submit">Sign Up</button>
-      </form>
+          <button type="submit" className="auth-button">Sign Up</button>
+        </form>
+      </div>
     </div>
   );
 };
