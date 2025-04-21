@@ -1,49 +1,80 @@
 /* src/styles/register.css */
 .register-page {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .register-page h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .register-page form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .register-page div {
-    margin-bottom: 15px;
-  }
-  
-  .register-page label {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .register-page input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 100%;
-  }
-  
-  .register-page button {
-    padding: 10px;
-    background-color: #4b2a69;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .register-page button:hover {
-    background-color: #7f52c5;
-  }
-  
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.register-page h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
+  color: #333;
+}
+
+.register-page form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-page div {
+  margin-bottom: 18px;
+}
+
+.register-page label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: #444;
+}
+
+.register-page input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.register-page input:focus {
+  border-color: #7f52c5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(127, 82, 197, 0.2);
+}
+
+.register-page button {
+  padding: 12px;
+  background-color: #4b2a69;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.register-page button:hover {
+  background-color: #7f52c5;
+}
+
+.register-page p {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.register-page p a {
+  color: #4b2a69;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-page p a:hover {
+  text-decoration: underline;
+}

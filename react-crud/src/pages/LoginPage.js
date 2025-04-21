@@ -1,25 +1,55 @@
 // src/pages/LoginPage.jsx
-import React from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../styles/login-register.css'; // Make sure this path matches your file structure
 
 const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Retrieve credentials from localStorage
+    const storedEmail = localStorage.getItem('email');
+    const storedPassword = localStorage.getItem('password');
+
+    // Validate the input with the stored credentials
+    if (email === storedEmail && password === storedPassword) {
+      console.log('User Logged In:', { email });
+      navigate('/'); // Redirect to home page on successful login
+    } else {
+      setErrorMessage('Invalid credentials');
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-blue-100">
-      <div className="bg-white p-8 rounded-2xl shadow-md w-96">
-        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-        <form>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2 className="auth-title">Login</h2>
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             placeholder="Email"
-            className="w-full p-3 border rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="auth-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-3 border rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="auth-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-xl hover:bg-blue-600 transition"
+            className="auth-button"
           >
             Login
           </button>
