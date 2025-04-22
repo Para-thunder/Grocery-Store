@@ -1,3 +1,4 @@
+/*CartPage.js*/
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Button } from '@mui/material';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+/*CategoryProductsPage.js*/import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'; // For getting categoryId from the URL
 import { getCategoryProducts } from '../services/api'; // Correct API function name
 import { Container, Typography, Card, CardMedia, CardContent, Grid, TextField, Button } from '@mui/material';

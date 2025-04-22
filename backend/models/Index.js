@@ -26,6 +26,7 @@ const sequelize = new Sequelize({
   },
   logging:console.log 
 });
+
 // Model loading and associations remain the same
 fs.readdirSync(__dirname)
   .filter(file => file.endsWith('.js') && file !== basename)

@@ -8,11 +8,16 @@ import ProductsPage from './pages/ProductsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import OrdersPage from './pages/OrdersPage';
 import CategoryProductsPage from './pages/CategoryProductsPage';
-import { CartProvider } from './context/CartContext'; // ✅ import the context
 import CartPage from './pages/CartPage';
+import { CartProvider } from './context/CartContext';
+
 function App() {
+  // Example email state (replace this with your actual auth logic)
+  const email = 'demo@example.com';
+
+
   return (
-    <CartProvider> {/* ✅ Wrap everything inside this */}
+    <CartProvider email={email}> {/* pass email instead of userId */}
       <Router>
         <div className="app-container">
           <Navbar />
