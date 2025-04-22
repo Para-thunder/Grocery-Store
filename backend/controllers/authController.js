@@ -70,7 +70,38 @@ const getCustomerProfile = async (req, res) => {
 }; */
 
 
-
+const getCustomerProfile = async (req, res) => {
+  try {
+    // Since authenticate middleware already attached customer info
+    // We can just return it or fetch fresh data if needed
+    if (!req.customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    // Option 1: Return what's already in req.customer
+    res.json(req.customer);
+    
+    // OR Option 2: Fetch fresh data from database
+    /*
+    const customer = await findCustomerByEmail(req.customer.email);
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    res.json({
+      customerId: customer.customer_id,
+      name: customer.name,
+      email: customer.email,
+      address: customer.address,
+      role: customer.role,
+      createdAt: customer.created_at,
+    });
+    */
+  } catch (error) {
+    console.error('Error fetching customer profile:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -110,7 +141,7 @@ const login = async (req, res) => {
 };
 const { findCustomerByEmail } = require('./customerController'); // Import the findCustomerByEmail function
 
-const getCustomerProfile = async (req, res) => {
+/* const getCustomerProfile = async (req, res) => {
   try {
     const customer = await findCustomerByEmail(req.customer.email);
     
@@ -130,7 +161,7 @@ const getCustomerProfile = async (req, res) => {
     console.error('Error fetching customer profile:', error);
     res.status(500).json({ error: error.message });
   }
-};
+}; */
 module.exports = {
   register,
   login,
