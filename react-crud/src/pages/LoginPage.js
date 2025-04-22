@@ -9,19 +9,33 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Retrieve credentials from localStorage
-    const storedEmail = localStorage.getItem('email');
-    const storedPassword = localStorage.getItem('password');
-
-    // Validate the input with the stored credentials
-    if (email === storedEmail && password === storedPassword) {
-      console.log('User Logged In:', { email });
-      navigate('/'); // Redirect to home page on successful login
-    } else {
-      setErrorMessage('Invalid credentials');
+  
+    try {
+      // Make an API call to the login endpoint
+      const response = await fetch('http://localhost:4000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Save the token or user details in localStorage or state
+        localStorage.setItem('token', data.token);
+        console.log('User Logged In:', data);
+        navigate('/'); // Redirect to home page on successful login
+      } else {
+        // Show error message from the API response
+        setErrorMessage(data.error || 'Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      setErrorMessage('Something went wrong. Please try again later.');
     }
   };
 

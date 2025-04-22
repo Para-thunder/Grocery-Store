@@ -69,6 +69,46 @@ const createCustomer = async (req, res) => {
   }
 };
 
+const findCustomerByEmail = async (email) => {
+  try {
+    // SQL query to find the customer by email
+    const query = `
+      SELECT customer_id, name, email, password_hash, address, role, created_at
+      FROM Customers
+      WHERE email = ?
+    `;
+
+    // Debugging: Log the query and parameter
+    console.log("Executing Query:", query);
+    console.log("Query Parameter:", email.toLowerCase());
+
+    // Execute the query
+    const customerResult = await new Promise((resolve, reject) => {
+      sql.query(
+        connectionString,
+        query,
+        [email.toLowerCase()], // Normalize email
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
+    });
+
+    // If no customer is found, return null
+    if (!customerResult || customerResult.length === 0) {
+      return null;
+    }
+
+    // Return the customer object
+    return customerResult[0];
+  } catch (err) {
+    console.error("Database error:", err);
+    throw new Error("Failed to find customer by email");
+  }
+};
+
 module.exports = {
   createCustomer,
+  findCustomerByEmail
 };
