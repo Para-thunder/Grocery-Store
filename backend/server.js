@@ -7,7 +7,12 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // Middleware
-app.use(cors());
+//app.use(cors());
+// Middleware
+app.use(cors({
+  origin: 'http://localhost:3000', // Allow requests from the frontend
+  credentials: true, // Allow cookies and credentials
+}));
 app.use(express.json());
 
 // Routes imports
