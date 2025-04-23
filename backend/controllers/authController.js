@@ -70,7 +70,7 @@ const getCustomerProfile = async (req, res) => {
 }; */
 
 
-/*const getCustomerProfile = async (req, res) => {
+const getCustomerProfile = async (req, res) => {
   try {
     // Since authenticate middleware already attached customer info
     // We can just return it or fetch fresh data if needed
@@ -97,13 +97,13 @@ const getCustomerProfile = async (req, res) => {
       createdAt: customer.created_at,
     });
     */
-  /*} catch (error) {
+  } catch (error) {
     console.error('Error fetching customer profile:', error);
     res.status(500).json({ error: error.message });
   }
-};*/
+};
 
-const getCustomerProfile = async (req, res) => {
+/* const getCustomerProfile = async (req, res) => {
   try {
     // Ensure the customer is attached by the authenticate middleware
     if (!req.customer) {
@@ -169,7 +169,7 @@ const getCustomerProfile = async (req, res) => {
     console.error('Error fetching customer profile:', error);
     res.status(500).json({ error: 'Failed to fetch customer profile' });
   }
-};
+}; */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -193,7 +193,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { customerId: customer.customer_id, email: customer.email },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
     res.json({ 
