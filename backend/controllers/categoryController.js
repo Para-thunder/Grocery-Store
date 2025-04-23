@@ -127,11 +127,36 @@ const getCategoryProducts = (req, res) => {
     return res.status(500).send("Error: " + error.message);
   }
 };
+const getProductsByCategory = (req, res) => {
+  const { categoryId } = req.params;
+
+  const query = `
+    SELECT product_id, name, description, price, stock_quantity
+    FROM Products
+    WHERE category_id = ?
+  `;
+
+  sql.query(connectionString, query, [categoryId], (err, result) => {
+    if (err) {
+      console.error("Error fetching products by category:", err);
+      return res.status(500).json({ error: "Failed to fetch products" });
+    }
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({ error: "No products found in this category" });
+    }
+
+    res.json({ products: result });
+  });
+};
+
+
   module.exports = {
     createCategory,
     getCategory,
     updateCategory,
     deleteCategory,
-    getCategoryProducts
+    getCategoryProducts,
+    getProductsByCategory
     // ... other exports
   };

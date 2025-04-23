@@ -11,7 +11,8 @@ const {
 
 const {
   getCategory,
-  getCategoryProducts
+  //getCategoryProducts,
+  getProductsByCategory
 } = require("../controllers/categoryController");
 
 const {
@@ -28,7 +29,8 @@ const {
 router.get("/products", getProducts);
 router.get("/products/:id", getProductById);
 router.get("/categories", getCategory);
-router.get("/categories/:categoryId/products", getCategoryProducts);
+//router.get("/categories/:categoryId/products", getCategoryProducts);
+router.get("/categories/:categoryId/products", getProductsByCategory);
 
 router.get("/orders", authenticate, getAllOrders);
 router.post("/orders", authenticate, createOrder);

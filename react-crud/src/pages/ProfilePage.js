@@ -39,6 +39,7 @@ const ProfilePage = () => {
           return;
         }
 
+<<<<<<< HEAD
         const response = await fetch('http://localhost:4000/api/auth/profile', {
           method: 'GET',
           headers: {
@@ -65,11 +66,26 @@ const ProfilePage = () => {
       } catch (err) {
         console.error('Profile fetch error:', err);
         setError(err.message || 'Failed to load profile');
+=======
+        // Make the API request to fetch the profile
+        const response = await axios.get('http://localhost:4000/api/auth/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach the token in the Authorization header
+          },
+        });
+
+        // Set the profile data
+        setProfile(response.data);
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        setError(err.response?.data?.error || 'Failed to fetch profile');
+>>>>>>> 50cad0afee74eb5d3fbfe453b8fa41376eb1d081
       } finally {
         setLoading(false);
       }
     };
 
+<<<<<<< HEAD
     fetchUserProfile();
   }, []);
 
@@ -209,8 +225,38 @@ const ProfilePage = () => {
           )}
         </Paper>
       </Container>
+=======
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  return (
+    <div>
+      <h1>Profile Page</h1>
+      {profile && (
+        <div>
+          <p><strong>Customer ID:</strong> {profile.customerId}</p>
+          <p><strong>Name:</strong> {profile.name}</p>
+          <p><strong>Email:</strong> {profile.email}</p>
+          <p><strong>Address:</strong> {profile.address}</p>
+          <p><strong>Role:</strong> {profile.role}</p>
+          <p><strong>Created At:</strong> {new Date(profile.createdAt).toLocaleString()}</p>
+        </div>
+      )}
+>>>>>>> 50cad0afee74eb5d3fbfe453b8fa41376eb1d081
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default ProfilePage;
+=======
+export default ProfilePage;
+>>>>>>> 50cad0afee74eb5d3fbfe453b8fa41376eb1d081

@@ -3,74 +3,67 @@ import { useParams } from 'react-router-dom';
 import { Container, Typography, Grid, Card, CardMedia, CardContent, CircularProgress } from '@mui/material';
 
 const CategoryProductsPage = () => {
-  const { category_id } = useParams();
+  const { categoryId } = useParams(); // Get categoryId from the URL
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [categoryName, setCategoryName] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/api/categories/${category_id}/products`);
+        const response = await fetch(`http://localhost:4000/api/categories/${categoryId}/products`); // Fetch products for the category
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
         const data = await response.json();
-        setProducts(data.products || []);
-        setCategoryName(data.categoryName || `Category ${category_id}`);
-      } catch (error) {
-        console.error('Error fetching products:', error);
+        setProducts(data.products || []); // Assuming the API returns a `products` array
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, [category_id]);
+  }, [categoryId]);
 
-  if (loading) return (
-    <div className="animated-gradient-background" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <CircularProgress />
-    </div>
-  );
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <div className="animated-gradient-background">
-      <Container className="content-container">
-        <Typography variant="h3" gutterBottom sx={{ marginBottom: 4 }}>
-          Products in {categoryName}
-        </Typography>
-        <Grid container spacing={3}>
-          {products.map((product) => (
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Products in Category {categoryId}
+      </Typography>
+      <Grid container spacing={3}>
+        {products.length > 0 ? (
+          products.map((product) => (
             <Grid item xs={12} sm={6} md={4} key={product.product_id}>
-              <Card sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)'
-              }}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardMedia
                   component="img"
                   sx={{ height: 200, objectFit: 'cover' }}
                   image={`/images/products/${product.product_id}.jpg`}
                   alt={product.name}
                   onError={(e) => {
-                    e.target.src = '/images/placeholder-product.jpg';
+                    e.target.src = '/images/placeholder-product.jpg'; // Fallback image
                   }}
                 />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h5" component="div">
-                    {product.name}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    ${product.price.toFixed(2)}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    Stock: {product.available_quantity}
-                  </Typography>
+                <CardContent>
+                  <Typography variant="h6">{product.name}</Typography>
+                  <Typography>${product.price}</Typography>
+                  <Typography>Stock: {product.stock_quantity}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-          ))}
-        </Grid>
-      </Container>
-    </div>
+          ))
+        ) : (
+          <Typography variant="body1" color="textSecondary">
+            No products available in this category.
+          </Typography>
+        )}
+      </Grid>
+    </Container>
   );
 };
 
