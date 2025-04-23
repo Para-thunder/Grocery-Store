@@ -66,4 +66,26 @@
     font-size: 14px;
     text-align: center;
   }
-  
+  /* Add to your login-register.css or create a new toast.css */
+.MuiAlert-filledSuccess {
+  background-color: #4caf50 !important;
+  color: white !important;
+  font-weight: 500;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.MuiSnackbar-root {
+  top: 80px !important;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

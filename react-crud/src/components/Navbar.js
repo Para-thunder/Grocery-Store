@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaHome, FaShoppingCart, FaUser } from 'react-icons/fa';
-import { Badge } from '@mui/material'; // To add cart item count badge
-import { useCart } from '../context/CartContext'; // Import your CartContext
+import { Badge } from '@mui/material';
+import { useCart } from '../context/CartContext';
 import '../styles/navbar.css';
 
 const Navbar = () => {
   const location = useLocation();
-  const { cart } = useCart(); // Access cart data from context
-  const [showDropdown, setShowDropdown] = useState(false); // State to toggle dropdown
+  const { cart } = useCart();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close dropdown when route changes
+  useEffect(() => {
+    setShowDropdown(false);
+  }, [location]);
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -17,7 +37,6 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Left-aligned Home link with icon */}
         <Link
           to="/"
           className={`navbar-home ${location.pathname === '/' ? 'active' : ''}`}
@@ -26,9 +45,7 @@ const Navbar = () => {
           <span> Home</span>
         </Link>
 
-        {/* Right-aligned links */}
         <div className="navbar-links">
-          {/* Products Link */}
           <Link
             to="/products"
             className={`navbar-link ${location.pathname === '/products' ? 'active' : ''}`}
@@ -36,7 +53,6 @@ const Navbar = () => {
             <span>Products</span>
           </Link>
 
-          {/* Categories Link */}
           <Link
             to="/categories"
             className={`navbar-link ${location.pathname === '/categories' ? 'active' : ''}`}
@@ -44,7 +60,6 @@ const Navbar = () => {
             <span>Categories</span>
           </Link>
 
-          {/* Cart Link with Badge */}
           <Link
             to="/cart"
             className={`navbar-link ${location.pathname === '/cart' ? 'active' : ''}`}
@@ -54,20 +69,35 @@ const Navbar = () => {
             </Badge>
           </Link>
 
-          {/* User Icon with Dropdown */}
-          <div className="navbar-user">
-            <FaUser className="user-icon" onClick={toggleDropdown} />
+          <div className="navbar-user" ref={dropdownRef}>
+            <FaUser 
+              className="user-icon" 
+              onClick={toggleDropdown}
+              style={{ cursor: 'pointer' }}
+            />
             {showDropdown && (
               <div className="user-dropdown">
-                <Link to="/login" className="dropdown-link">
+                <Link 
+                  to="/login" 
+                  className="dropdown-link"
+                  onClick={() => setShowDropdown(false)}
+                >
                   Login
                 </Link>
-                <Link to="/register" className="dropdown-link">
+                <Link 
+                  to="/register" 
+                  className="dropdown-link"
+                  onClick={() => setShowDropdown(false)}
+                >
                   Sign Up
                 </Link>
-                <Link to="/profile" className="dropdown-link">
-    Profile
-  </Link>
+                <Link 
+                  to="/profile" 
+                  className="dropdown-link"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  Profile
+                </Link>
               </div>
             )}
           </div>
