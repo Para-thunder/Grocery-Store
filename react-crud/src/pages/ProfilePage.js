@@ -113,7 +113,7 @@ const ProfilePage = () => {
             <>
               <Typography variant="h3" gutterBottom sx={{ 
                 fontWeight: 'bold',
-                color: 'primary.main',
+                color: 'purple',
                 mb: 4
               }}>
                 My Profile
