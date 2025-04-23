@@ -70,7 +70,7 @@ const getCustomerProfile = async (req, res) => {
 }; */
 
 
-const getCustomerProfile = async (req, res) => {
+/*const getCustomerProfile = async (req, res) => {
   try {
     // Since authenticate middleware already attached customer info
     // We can just return it or fetch fresh data if needed
@@ -97,79 +97,40 @@ const getCustomerProfile = async (req, res) => {
       createdAt: customer.created_at,
     });
     */
-  } catch (error) {
+  /*} catch (error) {
     console.error('Error fetching customer profile:', error);
     res.status(500).json({ error: error.message });
   }
-};
+};*/
 
-/* const getCustomerProfile = async (req, res) => {
+const getCustomerProfile = async (req, res) => {
   try {
     // Ensure the customer is attached by the authenticate middleware
     if (!req.customer) {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    // SQL queries to fetch customer and cart details
-    const customerQuery = `
-      SELECT customer_id, name, email, address, role, created_at
-      FROM Customers
-      WHERE customer_id = ?
-    `;
+    // Fetch fresh data from the database
+    const customer = await findCustomerByEmail(req.customer.email);
 
-    const cartQuery = `
-      SELECT cart_id, product_id, quantity
-      FROM Carts
-      WHERE customer_id = ?
-    `;
-
-    // Fetch customer details
-    const customerResult = await new Promise((resolve, reject) => {
-      sql.query(
-        connectionString,
-        customerQuery,
-        [req.customer.customerId],
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        }
-      );
-    });
-
-    if (!customerResult || customerResult.length === 0) {
+    if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    const customer = customerResult[0];
-
-    // Fetch cart details
-    const cartResult = await new Promise((resolve, reject) => {
-      sql.query(
-        connectionString,
-        cartQuery,
-        [req.customer.customerId],
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        }
-      );
-    });
-
-    // Respond with customer and cart details
+    // Respond with the required fields
     res.json({
       customerId: customer.customer_id,
-      name: customer.name,
       email: customer.email,
+      name: customer.name,
       address: customer.address,
-      role: customer.role,
       createdAt: customer.created_at,
-      cart: cartResult || [], // Include cart details (empty array if no items)
+      role: customer.role, // Include role if needed
     });
   } catch (error) {
     console.error('Error fetching customer profile:', error);
-    res.status(500).json({ error: 'Failed to fetch customer profile' });
+    res.status(500).json({ error: error.message });
   }
-}; */
+};
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
