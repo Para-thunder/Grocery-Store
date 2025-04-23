@@ -65,6 +65,9 @@ const Navbar = () => {
                 <Link to="/register" className="dropdown-link">
                   Sign Up
                 </Link>
+                <Link to="/profile" className="dropdown-link">
+    Profile
+  </Link>
               </div>
             )}
           </div>

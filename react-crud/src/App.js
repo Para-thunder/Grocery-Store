@@ -1,3 +1,4 @@
+// Update your App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -8,16 +9,13 @@ import ProductsPage from './pages/ProductsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import OrdersPage from './pages/OrdersPage';
 import CategoryProductsPage from './pages/CategoryProductsPage';
-import CartPage from './pages/CartPage';
+import ProfilePage from './pages/ProfilePage'; // Add this import
 import { CartProvider } from './context/CartContext';
+import CartPage from './pages/CartPage';
 
 function App() {
-  // Example email state (replace this with your actual auth logic)
-  const email = 'demo@example.com';
-
-
   return (
-    <CartProvider email={email}> {/* pass email instead of userId */}
+    <CartProvider>
       <Router>
         <div className="app-container">
           <Navbar />
@@ -29,6 +27,7 @@ function App() {
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<ProfilePage />} /> {/* Add this route */}
             <Route path="/categories/:categoryId/products" element={<CategoryProductsPage />} />
           </Routes>
         </div>

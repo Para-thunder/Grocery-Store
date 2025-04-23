@@ -25,9 +25,15 @@ const LoginPage = () => {
       const data = await response.json();
   
       if (response.ok) {
-        // Save the token or user details in localStorage or state
-        localStorage.setItem('token', data.token);
-        console.log('User Logged In:', data);
+        // Save the token and basic user info
+        // After successful login
+localStorage.setItem('token', data.token);
+localStorage.setItem('user', JSON.stringify({
+  name: data.name,
+  email: data.email,
+  address: data.address,        // Make sure this is included
+  createdAt: data.createdAt     // Make sure this is included
+}));
         navigate('/'); // Redirect to home page on successful login
       } else {
         // Show error message from the API response

@@ -69,3 +69,25 @@ th, td {
 th {
   background-color: #f0f0f0;
 }
+/* App.css */
+.animated-background {
+  background: linear-gradient(-45deg, #f9f0ff, #e1bee7, #ba68c8, #9c27b0);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  min-height: 100vh;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.page-content {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 1400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}

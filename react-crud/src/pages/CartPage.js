@@ -1,90 +1,174 @@
-/*CartPage.js*/
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Button } from '@mui/material';
+import { Button, Typography, Card, CardContent, Grid, Box, Divider, CircularProgress,Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircleOutline } from '@mui/icons-material';
 
 const CartPage = () => {
-  const { cart, removeFromCart ,clearCart } = useCart();
+  const { cart, removeFromCart, clearCart } = useCart();
   const navigate = useNavigate();
-  const [orderPlaced, setOrderPlaced] = useState(false); // To track if the order was placed
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const totalPrice = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 
-  // Function to handle placing the order
   const handlePlaceOrder = () => {
-    // Step 1: Display confirmation message
+    setIsProcessing(true);
     setOrderPlaced(true);
 
-    // Step 2: Clear the cart (empty the cart)
     setTimeout(() => {
-      cart.forEach(item => {
-        removeFromCart(item.product_id); // Remove each item from the cart
-      });
-
-      // Step 3: Redirect to the orders page after 2 seconds
+      clearCart();
       setTimeout(() => {
-        navigate('/orders'); // Redirect to orders page
-      }, 500); // Wait a bit before redirecting
-    }, 1000); // Wait for 1 second to show the confirmation message
+        navigate('/orders');
+      }, 500);
+    }, 1500);
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Your Cart</h2>
-      {orderPlaced ? (
-        <div>
-          <h3>Order placed successfully!</h3>
-          <p>Redirecting to the orders page...</p>
-        </div>
-      ) : cart.length === 0 ? (
-        <p>Your cart is empty.</p>
-      ) : (
-        <div>
-          {cart.map(item => (
-            <div key={item.product_id} style={{ marginBottom: '1rem' }}>
-              <strong>{item.name}</strong> - ${item.price} x {item.quantity}
-              <Button
-                onClick={() => removeFromCart(item.product_id)}
-                color="secondary"
-                style={{ marginLeft: '1rem' }}
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
-          <h3>Total: ${totalPrice.toFixed(2)}</h3>
-           
+    <div className="animated-gradient-background">
+      <Container className="content-container" maxWidth="md">
+        <Typography variant="h3" gutterBottom sx={{ 
+          fontWeight: 'bold', 
+          color: 'black',
+          mb: 4,
+          textAlign: 'center'
+        }}>
+          Your Shopping Cart
+        </Typography>
 
-        {/* Empty Cart Button */}
-        <Button
-            onClick={clearCart}
-            color="error"
-            variant="outlined"
-            style={{ marginTop: '1rem' }}
-          >
-            Empty Cart
-          </Button>
+        {orderPlaced ? (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '300px',
+            textAlign: 'center'
+          }}>
+            <CheckCircleOutline sx={{ 
+              fontSize: 80, 
+              color: 'success.main',
+              mb: 2
+            }} />
+            <Typography variant="h4" sx={{ mb: 2 }}>
+              Order Placed Successfully!
+            </Typography>
+            <Typography variant="body1">
+              Redirecting to your orders...
+            </Typography>
+            {isProcessing && <CircularProgress sx={{ mt: 3 }} />}
+          </Box>
+        ) : cart.length === 0 ? (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '300px'
+          }}>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              Your cart is empty
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/products')}
+              sx={{ mt: 2 }}
+            >
+              Browse Products
+            </Button>
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              {cart.map(item => (
+                <Card key={item.product_id} sx={{ mb: 2 }}>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid item xs={6}>
+                        <Typography variant="h6" component="div">
+                          {item.name}
+                        </Typography>
+                        <Typography color="text.secondary">
+                          ${item.price.toFixed(2)} × {item.quantity}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4} sx={{ textAlign: 'right' }}>
+                        <Typography variant="h6">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={2} sx={{ textAlign: 'right' }}>
+                        <Button
+                          onClick={() => removeFromCart(item.product_id)}
+                          color="error"
+                          size="small"
+                        >
+                          Remove
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              ))}
+            </Grid>
 
+            <Grid item xs={12} md={4}>
+              <Card sx={{ position: 'sticky', top: '20px' }}>
+                <CardContent>
+                  <Typography variant="h5" sx={{ mb: 2 }}>
+                    Order Summary
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography>Subtotal:</Typography>
+                    <Typography>${totalPrice.toFixed(2)}</Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography>Shipping:</Typography>
+                    <Typography>$0.50</Typography>
+                  </Box>
+                  
+                  <Divider sx={{ my: 2 }} />
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                    <Typography variant="h6">Total:</Typography>
+                    <Typography variant="h6">${totalPrice.toFixed(2)}</Typography>
+                  </Box>
 
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    size="large"
+                    onClick={handlePlaceOrder}
+                    disabled={cart.length === 0}
+                    sx={{ mb: 2 }}
+                  >
+                    Place Order
+                  </Button>
 
-          {/* Place Order Button */}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handlePlaceOrder}
-            style={{ marginTop: '1rem' }}
-            disabled={cart.length === 0} // Disable button if cart is empty
-          >
-            Place Order
-          </Button>
-        </div>
-      )}
+                  <Button
+                    onClick={clearCart}
+                    color="error"
+                    variant="outlined"
+                    fullWidth
+                    size="large"
+                  >
+                    Empty Cart
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+      </Container>
     </div>
   );
 };
 
-export default CartPage; 
+export default CartPage;

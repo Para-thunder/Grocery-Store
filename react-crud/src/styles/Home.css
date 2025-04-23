@@ -377,3 +377,99 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.2); }
 }
+/* Add to your Home.css */
+.home-content {
+  background: linear-gradient(-45deg, #f9f0ff, #e1bee7, #ba68c8, #9c27b0);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* Add to your Home.css */
+.floating-elements {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.floating-element {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  filter: blur(1px);
+  animation: float 15s infinite linear;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(20vw) rotate(360deg);
+    opacity: 0;
+  }
+}
+/* Add this to your CSS file */
+.animated-background {
+  background: linear-gradient(-45deg, #f9f0ff, #e1bee7, #ba68c8, #9c27b0);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  min-height: 100vh;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.page-content {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 1400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+/* App.css */
+/* Animated Gradient Background */
+.animated-gradient-background {
+  background: linear-gradient(-45deg, #f9f0ff, #e1bee7, #ba68c8, #9c27b0);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Content Container */
+.content-container {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 0 auto;
+  max-width: 1400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 40px); /* Adjust based on your padding */
+}

@@ -1,10 +1,38 @@
 // src/services/api.js
-import axios from 'axios';
+/*import axios from 'axios';
 
 const API = axios.create({
   baseURL: '/api',
   timeout: 10000,
+});*/
+// src/services/api.js
+import axios from 'axios';
+
+const API = axios.create({
+  baseURL: 'http://localhost:4000/api', // Make sure this matches your backend
+  timeout: 10000,
 });
+
+// Add authorization header if token exists
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const getProfile = async () => {
+  try {
+    const response = await API.get('/auth/profile');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    throw error;
+  }
+};
+
+// ... keep your existing exports ...
 
 export const getProducts = async () => {
   try {
