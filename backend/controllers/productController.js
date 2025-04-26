@@ -1,6 +1,9 @@
 const sql = require("msnodesqlv8");
 const connectionString = require("../config/connectDB");
 const Product = require("../models/Product"); // Adjust the path to your Product model
+const Category = require("../models/Category"); // Adjust the path to your Category model
+// Adjust the path to your Inventory model
+const { sequelize } = require('../models'); // Adjust the path to your sequelize instance 
 const getProducts = (req, res) => {
   const { page = 1, limit = 10 } = req.query; // Default to page 1, 10 items per page
   const offset = (page - 1) * limit;

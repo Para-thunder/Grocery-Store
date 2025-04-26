@@ -2,7 +2,10 @@ const CustomerService = require('../services/customerService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { createCustomer } = require('./customerController'); // Import the createCustomer function
-
+//const { findCustomerByEmail } = require('./customerController'); // Import the findCustomerByEmail functio
+const connectionString  = require('../config/connectDB'); // Import your database connection string
+const sql = require('msnodesqlv8');
+const { sequelize } = require('../models'); // Import sequelize instance correctly
 const register = async (req, res) => {
   try {
     const { name, email, password, address, role } = req.body;

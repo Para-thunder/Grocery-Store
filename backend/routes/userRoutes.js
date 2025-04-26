@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { authenticate } = require("../middlewares/authMiddleware");
+const { authenticate } = require("../middlewares/authmiddleware");
 
 // Import all controller functions needed for the store frontend
 const {

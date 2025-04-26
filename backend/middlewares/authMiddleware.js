@@ -1,43 +1,10 @@
 const jwt = require('jsonwebtoken');
-const { Customer } = require('../models/Index'); // Import the Customer model correctly
-
-
-
-/* const authenticate = async (req, res, next) => {
-  try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    console.log('Token received:', token); // Debug log
-
-    if (!token) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded token:', decoded); // Debug log
-
-    // Fetch the customer from the database
-    const customer = await Customer.findByPk(decoded.customerId);
-    if (!customer) {
-      return res.status(401).json({ error: 'Invalid token - customer not found' });
-    }
-
-    // Attach customer details to the request object
-    req.customer = {
-      customerId: customer.customer_id,
-      email: customer.email,
-      name: customer.name,
-      role: customer.role,
-    };
-
-    next();
-  } catch (err) {
-    console.error('Authentication error:', err);
-    res.status(401).json({ error: 'Invalid or expired token' });
-  }
-}; */
-
-
-//const jwt = require('jsonwebtoken');
+const { Customer } = require('../models/Customer'); // Import the Customer model correctly
+const {Cart} = require('../models/Cart');
+const { Order } = require('../models/Order'); // Import the Order model correctly
+const { OrderItem } = require('../models/OrderItem'); // Import the OrderItem model correctly 
+const { Product } = require('../models/Product'); // Import the Product model correctly
+const { sequelize } = require('../models'); // Import sequelize instance correctly
 const { findCustomerByEmail } = require('../controllers/customerController');
 
 const authenticate = async (req, res, next) => {

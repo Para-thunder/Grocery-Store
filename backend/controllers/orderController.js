@@ -1,173 +1,327 @@
-const sql = require("msnodesqlv8");
-const connectionString = require("../config/connectDB");
+// Replace all individual model imports with this:
+const { 
+  sequelize,
+  Order,
+  OrderItem,
+  Product,
+  Customer 
+} = require('../models');
+const { getProductPrices } = require('../utils/productUtils');
+const { calculateTotalPrice, validateStock } = require('../utils/orderUtils'); // Fixed import
 
-// Create a new order
 const createOrder = async (req, res) => {
-  const { customer_id, items, payment_method } = req.body;
-
+  const transaction = await sequelize.transaction();
+  
   try {
-    const productPrices = await getProductPrices(items.map(item => item.product_id));
-    const total_price = calculateTotalPrice(items, productPrices);
+    const { customer_id, items, payment_method, shipping_address } = req.body;
 
-    sql.connect(connectionString, async (err, conn) => {
-      if (err) return res.status(500).json({ error: "Database connection failed" });
+    // 1. Input Validation
+    if (!customer_id || !items || !payment_method || !shipping_address) {
+      await transaction.rollback();
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
-      try {
-        const orderResult = await insertOrder(conn, customer_id, total_price);
-        await addOrderItems(conn, orderResult.order_id, items, productPrices);
-        await createPayment(conn, orderResult.order_id, total_price, payment_method);
-        await createDeliveryTracking(conn, orderResult.order_id);
-        await updateInventory(conn, items);
+    if (!Array.isArray(items) || items.length === 0) {
+      await transaction.rollback();
+      return res.status(400).json({ error: "Order must contain at least one item" });
+    }
 
-        res.status(201).json({
-          message: "Order created successfully",
-          order: {
-            order_id: orderResult.order_id,
-            order_date: orderResult.order_date,
-            total_price,
-            status: 'Pending'
-          }
-        });
-      } catch (error) {
-        conn.rollback();
-        res.status(500).json({ error: "Order creation failed", details: error.message });
-      }
+    // 2. Get product prices and stock using utility
+    const productIds = items.map(item => item.product_id);
+    const priceMap = await getProductPrices(productIds);
+
+    // 3. Verify all products exist
+    const missingIds = productIds.filter(id => !priceMap[id]);
+    if (missingIds.length > 0) {
+      await transaction.rollback();
+      return res.status(404).json({ 
+        error: "Some products not found",
+        missing_product_ids: missingIds
+      });
+    }
+
+    // 4. Check stock using utility
+    try {
+      validateStock(items, priceMap); // Now properly imported
+    } catch (stockError) {
+      await transaction.rollback();
+      return res.status(400).json({
+        error: stockError.message,
+        items: stockError.cause || [] // Handle case where cause might be undefined
+      });
+    }
+
+    // 5. Calculate total using utility
+    const total_amount = calculateTotalPrice(items, priceMap);
+
+    // 6. Create the order
+    const order = await Order.create({
+      customer_id,
+      total_amount,
+      payment_method,
+      shipping_address,
+      status: 'pending',
+      order_date: new Date()
+    }, { transaction });
+
+    // 7. Create order items
+    const orderItems = items.map(item => ({
+      order_id: order.order_id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: priceMap[item.product_id].price
+    }));
+
+    await OrderItem.bulkCreate(orderItems, { transaction });
+
+    // 8. Update product quantities
+    const updatePromises = items.map(item => 
+      Product.decrement('stock_quantity', {
+        by: item.quantity,
+        where: { product_id: item.product_id },
+        transaction
+      })
+    );
+    await Promise.all(updatePromises);
+
+    await transaction.commit();
+
+    return res.status(201).json({
+      success: true,
+      order: {
+        ...order.get({ plain: true }),
+        items: orderItems
+      },
+      message: "Order created successfully"
     });
+
   } catch (error) {
-    res.status(500).json({ error: "Order processing failed", details: error.message });
+    await transaction.rollback();
+    console.error("Order creation error:", error);
+    return res.status(500).json({ 
+      error: "Failed to create order",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
-// Get all orders
-const getAllOrders = (req, res) => {
-  const query = `
-    SELECT o.order_id, o.order_date, o.total_price, o.status,
-           c.name AS customer_name, c.email AS customer_email,
-           p.payment_method, p.payment_status,
-           dt.delivery_status, dt.estimated_delivery_date
-    FROM Orders o
-    JOIN Customers c ON o.customer_id = c.customer_id
-    LEFT JOIN Payments p ON o.order_id = p.order_id
-    LEFT JOIN Delivery_Tracking dt ON o.order_id = dt.order_id
-    ORDER BY o.order_date DESC
-  `;
+/* const createOrder = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
+  try {
+    const { customer_id, items, payment_method, shipping_address } = req.body;
 
-  sql.query(connectionString, query, (err, result) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    res.json(result.recordset);
-  });
-};
+    // 1. Input Validation
+    if (!customer_id || !items || !payment_method || !shipping_address) {
+      await transaction.rollback();
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      await transaction.rollback();
+      return res.status(400).json({ error: "Order must contain at least one item" });
+    }
+
+    // 2. Get product prices and stock using utility
+    const productIds = items.map(item => item.product_id);
+    const priceMap = await getProductPrices(productIds);
+
+    // 3. Verify all products exist
+    const missingIds = productIds.filter(id => !priceMap[id]);
+    if (missingIds.length > 0) {
+      await transaction.rollback();
+      return res.status(404).json({ 
+        error: "Some products not found",
+        missing_product_ids: missingIds
+      });
+    }
+
+    // 4. Check stock using utility
+    try {
+      validateStock(items, priceMap);
+    } catch (stockError) {
+      await transaction.rollback();
+      return res.status(400).json({
+        error: stockError.message,
+        items: stockError.cause
+      });
+    }
+
+    // 5. Calculate total using utility
+    const total_amount = calculateTotalPrice(items, priceMap);
+
+    // 6. Create the order
+    const order = await Order.create({
+      customer_id,
+      total_amount,
+      payment_method,
+      shipping_address,
+      status: 'pending',
+      order_date: new Date()
+    }, { transaction });
+
+    // 7. Create order items
+    const orderItems = items.map(item => ({
+      order_id: order.order_id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: priceMap[item.product_id].price
+    }));
+
+    await OrderItem.bulkCreate(orderItems, { transaction });
+
+    // 8. Update product quantities
+    for (const item of items) {
+      await Product.decrement('stock_quantity', {
+        by: item.quantity,
+        where: { product_id: item.product_id },
+        transaction
+      });
+    }
+
+    await transaction.commit();
+
+    return res.status(201).json({
+      success: true,
+      order: {
+        ...order.get({ plain: true }),
+        items: orderItems
+      },
+      message: "Order created successfully"
+    });
+
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Order creation error:", error);
+    return res.status(500).json({ 
+      error: "Failed to create order",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+}; */
+
+// [Keep your existing getOrderDetails, updateOrderStatus, and getAllOrders functions]
 
 // Get order details
-const getOrderDetails = (req, res) => {
-  const orderId = req.params.id;
-  
-  const orderQuery = `
-    SELECT o.*, c.name AS customer_name, c.email, c.address,
-           p.payment_method, p.amount, p.payment_status, p.transaction_date,
-           dt.delivery_status, dt.estimated_delivery_date, dt.actual_delivery_date,
-           dt.courier_service, dt.tracking_number
-    FROM Orders o
-    JOIN Customers c ON o.customer_id = c.customer_id
-    LEFT JOIN Payments p ON o.order_id = p.order_id
-    LEFT JOIN Delivery_Tracking dt ON o.order_id = dt.order_id
-    WHERE o.order_id = ?
-  `;
+const getOrderDetails = async (req, res) => {
+  const { id } = req.params; // Extract id directly
 
-  const itemsQuery = `
-    SELECT oi.*, p.name AS product_name, p.description, c.category_name
-    FROM Order_Items oi
-    JOIN Products p ON oi.product_id = p.product_id
-    JOIN Categories c ON p.category_id = c.category_id
-    WHERE oi.order_id = ?
-  `;
+  // Debugging: Log the id
+  console.log("Order ID received:", id);
 
-  sql.connect(connectionString, (err, conn) => {
-    if (err) return res.status(500).json({ error: "Database connection failed" });
+  if (!id) {
+    return res.status(400).json({ error: "Order ID is required" });
+  }
 
-    conn.query(orderQuery, [orderId], (err, orderResult) => {
-      if (err) return res.status(500).json({ error: "Database error" });
-      if (!orderResult.recordset.length) return res.status(404).json({ error: "Order not found" });
-
-      conn.query(itemsQuery, [orderId], (err, itemsResult) => {
-        if (err) return res.status(500).json({ error: "Database error" });
-        res.json({
-          order: orderResult.recordset[0],
-          items: itemsResult.recordset
-        });
-      });
+  try {
+    const order = await Order.findOne({
+      where: { order_id: id }, // Use id here
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['name', 'email', 'address'],
+        },
+        {
+          model: OrderItem,
+          as: 'items',
+          include: [
+            {
+              model: Product,
+              as: 'product',
+              attributes: ['name', 'description', 'price'],
+            },
+          ],
+        },
+      ],
     });
-  });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    return res.status(200).json(order);
+  } catch (err) {
+    console.error("Error fetching order details:", err);
+    return res.status(500).json({ error: "Failed to fetch order details", details: err.message });
+  }
 };
 
 // Update order status
-const updateOrderStatus = (req, res) => {
-  const orderId = req.params.id;
-  const { status } = req.body;
+const updateOrderStatus = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
+  try {
+    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(req.body.status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
 
-  const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({ error: "Invalid status value" });
-  }
+    const order = await Order.findOne({
+      where: { order_id: req.params.id },
+      transaction
+    });
 
-  const query = `
-    UPDATE Orders
-    SET status = ?
-    WHERE order_id = ?
-  `;
-
-  sql.query(connectionString, query, [status, orderId], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    if (result.rowsAffected[0] === 0) {
+    if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
-    
-    if (status === 'Cancelled') {
-      restockCancelledOrderItems(orderId);
+
+    // If cancelling, we might want to restock items
+    if (req.body.status === 'cancelled' && order.status !== 'cancelled') {
+      // Implement restock logic if needed
     }
 
-    res.json({ message: "Order status updated successfully" });
-  });
-};
-
-// Helper functions
-const getProductPrices = async (productIds) => {
-  return new Promise((resolve, reject) => {
-    const placeholders = productIds.map(() => '?').join(',');
-    const query = `
-      SELECT product_id, price 
-      FROM Products 
-      WHERE product_id IN (${placeholders})
-    `;
+    order.status = req.body.status;
+    await order.save({ transaction });
     
-    sql.query(connectionString, query, productIds, (err, result) => {
-      if (err) reject(err);
-      resolve(result.recordset);
+    await transaction.commit();
+
+    return res.status(200).json({ 
+      message: "Order status updated successfully", 
+      order 
     });
-  });
-};
-
-const calculateTotalPrice = (items, productPrices) => {
-  return items.reduce((sum, item) => {
-    const product = productPrices.find(p => p.product_id === item.product_id);
-    return sum + (product.price * item.quantity);
-  }, 0);
-};
-
-const insertOrder = async (conn, customer_id, total_price) => {
-  return new Promise((resolve, reject) => {
-    const orderQuery = `
-      INSERT INTO Orders (customer_id, total_price, status)
-      OUTPUT INSERTED.order_id, INSERTED.order_date
-      VALUES (?, ?, 'Pending')
-    `;
-    conn.query(orderQuery, [customer_id, total_price], (err, result) => {
-      if (err) reject(err);
-      resolve(result.recordset[0]);
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Error updating order status:", err);
+    return res.status(500).json({ 
+      error: "Failed to update order status", 
+      details: err.message 
     });
-  });
+  }
 };
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.findAll({
+      include: [
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['name', 'email', 'address'], // Include customer details
+        },
+        {
+          model: OrderItem,
+          as: 'items',
+          include: [
+            {
+              model: Product,
+              as: 'product',
+              attributes: ['name', 'description', 'price'], // Include product details
+            },
+          ],
+        },
+      ],
+      order: [['order_date', 'DESC']], // Sort orders by date in descending order
+    });
 
+    return res.status(200).json(orders);
+  } catch (err) {
+    console.error("Error fetching orders:", err);
+    return res.status(500).json({
+      error: "Failed to fetch orders",
+      details: err.message,
+    });
+  }
+};
 
 
 module.exports = {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { authenticate, adminOnly } = require("../middlewares/authMiddleware");
+const { authenticate, adminOnly } = require("../middlewares/authmiddleware");
 const {
   createProduct,
   updateProduct,

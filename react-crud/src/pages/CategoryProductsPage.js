@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Typography, Grid, Card, CardMedia, CardContent, CircularProgress } from '@mui/material';
+import { Container, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress } from '@mui/material';
 
 const CategoryProductsPage = () => {
   const { categoryId } = useParams(); // Get categoryId from the URL
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cart, setCart] = useState([]); // State to manage cart items
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -27,6 +28,14 @@ const CategoryProductsPage = () => {
     fetchProducts();
   }, [categoryId]);
 
+  const handleAddToCart = (product) => {
+    setCart((prevCart) => {
+      const updatedCart = [...prevCart, product]; // Add product to cart
+      console.log("Cart updated:", updatedCart); // Log the updated cart
+      return updatedCart;
+    });
+  };
+
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
 
@@ -34,6 +43,9 @@ const CategoryProductsPage = () => {
     <Container>
       <Typography variant="h4" gutterBottom>
         Products in Category {categoryId}
+      </Typography>
+      <Typography variant="h6" gutterBottom>
+        Cart: {JSON.stringify(cart, null, 2)}
       </Typography>
       <Grid container spacing={3}>
         {products.length > 0 ? (
@@ -53,6 +65,14 @@ const CategoryProductsPage = () => {
                   <Typography variant="h6">{product.name}</Typography>
                   <Typography>${product.price}</Typography>
                   <Typography>Stock: {product.stock_quantity}</Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    sx={{ mt: 2 }}
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    Add to Cart
+                  </Button>
                 </CardContent>
               </Card>
             </Grid>

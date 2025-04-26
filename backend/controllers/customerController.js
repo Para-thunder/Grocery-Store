@@ -1,7 +1,7 @@
 const sql = require("msnodesqlv8");
 const connectionString = require("../config/connectDB");
 const Customers = require("../models/Customer");
-
+const { sequelize } = require('../models/index');
 
 const createCustomer = async (req, res) => {
   const { name, email, password, address, role } = req.body;
@@ -70,6 +70,10 @@ const createCustomer = async (req, res) => {
 };
 
 const findCustomerByEmail = async (email) => {
+  if (!email) {
+    throw new Error('Email is required');
+  }
+
   try {
     // SQL query to find the customer by email
     const query = `

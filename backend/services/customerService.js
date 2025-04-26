@@ -1,4 +1,4 @@
-const { Customer } = require('../models/Index');
+const { Customer } = require('../models/index');
 const bcrypt = require('bcrypt');
 const { ValidationError } = require('sequelize');
 

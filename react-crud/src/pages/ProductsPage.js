@@ -40,7 +40,7 @@ const ProductsPage = () => {
                 <CardMedia
                   component="img"
                   sx={{ height: 200, objectFit: 'cover' }}
-                  image={`/images/products/${product.product_id}.jpg`}
+                  image={`/images/products/${product.name}.jpg`}
                   alt={product.name}
                   onError={(e) => {
                     e.target.src = '/images/placeholder-product.jpg';

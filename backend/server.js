@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
-const { sequelize } = require("./models/Index.js"); // Import sequelize instance
+const { sequelize } = require("./models/index.js"); // Import sequelize instance
 
 const app = express();
 const port = process.env.PORT || 4000;
