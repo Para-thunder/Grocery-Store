@@ -1,30 +1,28 @@
-const Cart = require('../models/Cart');
-const Product = require("../models/Product");
-const { sequelize } = require('../models/index'); // Import sequelize instance correctly
 
+const { Cart,Product,Customer,sequelize } = require('../models/index'); // Import sequelize instance correctly
+  
 // Add a product to the cart
 const addToCart = async (req, res) => {
-  const { user_id, product_id, quantity } = req.body;
-
   try {
-    // Check if the product already exists in the cart
-    const existingCartItem = await Cart.findOne({
-      where: { user_id, product_id },
+    const { user_id, product_id, quantity } = req.body;
+
+    // Directly create a new cart item without checking for existing ones
+    const newCartItem = await Cart.create({
+      user_id,
+      product_id,
+      quantity,
     });
 
-    if (existingCartItem) {
-      // Update the quantity if the product already exists
-      existingCartItem.quantity += quantity;
-      await existingCartItem.save();
-      return res.status(200).json({ message: 'Cart updated successfully', cart: existingCartItem });
-    }
-
-    // Add a new product to the cart
-    const cartItem = await Cart.create({ user_id, product_id, quantity });
-    return res.status(201).json({ message: 'Product added to cart', cart: cartItem });
+    return res.status(201).json({
+      message: 'Product added to cart',
+      cart: newCartItem,
+    });
   } catch (err) {
     console.error('Error adding to cart:', err);
-    return res.status(500).json({ error: 'Failed to add product to cart', details: err.message });
+    return res.status(500).json({ 
+      error: 'Failed to add product to cart', 
+      details: err.message 
+    });
   }
 };
 

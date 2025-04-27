@@ -112,7 +112,24 @@ const findCustomerByEmail = async (email) => {
   }
 };
 
+const findCustomerByEmail1 = async (email) => {
+  if (!email) {
+    throw new Error('Email is required');
+  }
+
+  try {
+    const customer = await Customer.findOne({
+      where: { email: email.toLowerCase() }, // Normalize email
+    });
+
+    return customer; // Return the Sequelize model instance
+  } catch (err) {
+    console.error("Error in findCustomerByEmail1:", err);
+    throw new Error("Failed to find customer by email1");
+  }
+};
 module.exports = {
   createCustomer,
-  findCustomerByEmail
+  findCustomerByEmail,
+  findCustomerByEmail1,
 };

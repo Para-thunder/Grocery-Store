@@ -1,3 +1,5 @@
+const sequelize = require('../config/connectDB'); // Adjust the path to your Sequelize instance
+
 module.exports = (sequelize, DataTypes) => {
   const Customer = sequelize.define('Customer', {
     customer_id: {

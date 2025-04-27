@@ -23,88 +23,6 @@ const register = async (req, res) => {
   }
 };
 
-/* const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find customer by email
-    const customer = await CustomerService.findCustomerByEmail(email);
-    
-    if (!customer) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, customer.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Create JWT token
-    const token = jwt.sign(
-      { customerId: customer.customer_id, email: customer.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    res.json({ 
-      token,
-      customerId: customer.customer_id,
-      name: customer.name,
-      email: customer.email
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const getCustomerProfile = async (req, res) => {
-  try {
-    const customer = await CustomerService.findCustomerByEmail(req.customer.email);
-    
-    if (!customer) {
-      return res.status(404).json({ error: 'Customer not found' });
-    }
-    
-    res.json(customer);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}; */
-
-
-/*const getCustomerProfile = async (req, res) => {
-  try {
-    // Since authenticate middleware already attached customer info
-    // We can just return it or fetch fresh data if needed
-    if (!req.customer) {
-      return res.status(404).json({ error: 'Customer not found' });
-    }
-    
-    // Option 1: Return what's already in req.customer
-    res.json(req.customer);
-    
-    // OR Option 2: Fetch fresh data from database
-    /*
-    const customer = await findCustomerByEmail(req.customer.email);
-    if (!customer) {
-      return res.status(404).json({ error: 'Customer not found' });
-    }
-    
-    res.json({
-      customerId: customer.customer_id,
-      name: customer.name,
-      email: customer.email,
-      address: customer.address,
-      role: customer.role,
-      createdAt: customer.created_at,
-    });
-    */
-  /*} catch (error) {
-    console.error('Error fetching customer profile:', error);
-    res.status(500).json({ error: error.message });
-  }
-};*/
 
 const getCustomerProfile = async (req, res) => {
   try {
@@ -171,31 +89,86 @@ const login = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-const { findCustomerByEmail } = require('./customerController'); // Import the findCustomerByEmail function
+const { findCustomerByEmail,findCustomerByEmail1 } = require('./customerController'); // Import the findCustomerByEmail function
 
-/* const getCustomerProfile = async (req, res) => {
+const updateCustomerProfile = async (req, res) => {
   try {
-    const customer = await findCustomerByEmail(req.customer.email);
-    
+    if (!req.customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    const { name, email, address, password } = req.body;
+    const currentEmail = req.customer.email;
+
+    if (!name && !email && !address && !password) {
+      return res.status(400).json({ error: 'At least one field must be provided to update' });
+    }
+
+    // Fetch the customer first
+    const customer = await findCustomerByEmail(currentEmail);
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
     }
+
+    // Build the update query dynamically
+    let updates = [];
+    let params = [];
+    
+    if (name) {
+      updates.push('name = ?');
+      params.push(name);
+    }
+    if (email) {
+      updates.push('email = ?');
+      params.push(email.toLowerCase());
+    }
+    if (address) {
+      updates.push('address = ?');
+      params.push(address);
+    }
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updates.push('password_hash = ?');
+      params.push(hashedPassword);
+    }
+
+    // Add current email as the WHERE parameter
+    params.push(currentEmail);
+
+    const updateQuery = `
+      UPDATE Customers 
+      SET ${updates.join(', ')} 
+      WHERE email = ?
+    `;
+
+    await new Promise((resolve, reject) => {
+      sql.query(connectionString, updateQuery, params, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    // Fetch the updated customer
+    const updatedCustomer = await findCustomerByEmail(email || currentEmail);
     
     res.json({
-      customerId: customer.customer_id,
-      name: customer.name,
-      email: customer.email,
-      address: customer.address,
-      role: customer.role,
-      createdAt: customer.created_at,
+      message: 'Profile updated successfully',
+      customer: {
+        customerId: updatedCustomer.customer_id,
+        name: updatedCustomer.name,
+        email: updatedCustomer.email,
+        address: updatedCustomer.address,
+      },
     });
   } catch (error) {
-    console.error('Error fetching customer profile:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error updating customer profile:', error);
+    res.status(500).json({ error: 'Failed to update profile', details: error.message });
   }
-}; */
+};
 module.exports = {
   register,
   login,
-  getCustomerProfile
+  getCustomerProfile,
+  updateCustomerProfile
 };

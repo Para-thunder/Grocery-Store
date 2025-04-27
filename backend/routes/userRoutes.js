@@ -19,7 +19,8 @@ const {
   createOrder,
   getAllOrders,
   getOrderDetails,
-  updateOrderStatus
+  updateOrderStatus,
+  getOrdersByUserId
 } = require("../controllers/orderController");
 
 
@@ -32,9 +33,13 @@ router.get("/categories", getCategory);
 //router.get("/categories/:categoryId/products", getCategoryProducts);
 router.get("/categories/:categoryId/products", getProductsByCategory);
 
+
+
+
+
 router.get("/orders", authenticate, getAllOrders);
 router.post("/orders", authenticate, createOrder);
 router.get("/orders/:id", authenticate, getOrderDetails);
 router.patch("/orders/:id/status", authenticate, updateOrderStatus);
-
+router.get("/users/orders", authenticate, getOrdersByUserId);
 module.exports = router;
