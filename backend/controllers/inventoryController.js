@@ -1,6 +1,10 @@
 const sql = require("msnodesqlv8");
 const connectionString = require("../config/connectDB");
-
+const Inventory = require("../models/Inventory"); // Adjust the path to your Inventory model
+const { sequelize } = require('../models/index'); // Adjust the path to your sequelize instance
+const Product = require("../models/Product"); // Adjust the path to your Product model
+const Order = require("../models/Order"); // Adjust the path to your Order model
+const OrderItem = require("../models/OrderItem"); // Adjust the path to your OrderItem model
 // Get all Inventories
 const getInventories = (req, res) => {
     const query = "SELECT * FROM Inventory"; // ✅ singular table name
@@ -91,10 +95,62 @@ const getInventories = (req, res) => {
       return res.status(500).send("Error: " + error.message);
     }
   };
+  const getNewArrivals = (req, res) => {
+    const { days = 30 } = req.query; // Default to the last 30 days
+  
+    const query = `
+      SELECT p.*, i.available_quantity, i.last_updated
+      FROM Products p
+      JOIN Inventory i ON p.product_id = i.product_id
+      WHERE i.last_updated >= DATEADD(DAY, -${days}, GETDATE())
+      ORDER BY i.last_updated DESC
+    `;
+  
+    try {
+      sql.query(connectionString, query, (err, rows) => {
+        if (err) {
+          return res.status(500).send("Error fetching new arrivals: " + err.message);
+        }
+        return res.json(rows);
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      return res.status(500).send("Error: " + error.message);
+    }
+  };
+
+  const getTopSellingProducts = (req, res) => {
+    const { limit = 10 } = req.query; // Default to top 10 products
+  
+    const query = `
+      SELECT p.product_id, p.name, 
+        CONVERT(NVARCHAR(4000), p.description) AS description, 
+        p.price, SUM(oi.quantity) AS total_sold
+      FROM Products p
+      JOIN Order_Items oi ON p.product_id = oi.product_id
+      GROUP BY p.product_id, p.name, CONVERT(NVARCHAR(4000), p.description), p.price
+      ORDER BY total_sold DESC
+      OFFSET 0 ROWS FETCH NEXT ${limit} ROWS ONLY
+    `;
+  
+    try {
+      sql.query(connectionString, query, (err, rows) => {
+        if (err) {
+          return res.status(500).send("Error fetching top selling products: " + err.message);
+        }
+        return res.json(rows);
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      return res.status(500).send("Error: " + error.message);
+    }
+  };
   module.exports = {
     createInventory,
     getInventories,
     updateInventory,
-    deleteInventory
+    deleteInventory,
+    getNewArrivals,
+    getTopSellingProducts
     // ... other exports
   };
