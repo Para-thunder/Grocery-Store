@@ -138,6 +138,7 @@ const getInventories = (req, res) => {
         if (err) {
           return res.status(500).send("Error fetching top selling products: " + err.message);
         }
+        console.log("Top selling products:", rows);
         return res.json(rows);
       });
     } catch (error) {
