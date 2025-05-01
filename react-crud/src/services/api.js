@@ -72,3 +72,14 @@ export const getCategoryProducts = async (categoryId) => {
     throw error;
   }
 };
+
+
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await API.put('/auth/users/profile', profileData); // Changed from /auth/profile
+    return response.data;
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error.response?.data?.error || 'Failed to update profile';
+  }
+};

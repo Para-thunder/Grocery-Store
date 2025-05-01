@@ -11,14 +11,30 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider
+  Divider,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
+import { updateProfile } from '../services/api';
 import '../styles/ProfilePage.css';
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    address: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [updateError, setUpdateError] = useState('');
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,8 +46,14 @@ const ProfilePage = () => {
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUserData(parsedUser);
+          setFormData({
+            name: parsedUser.name || '',
+            email: parsedUser.email || '',
+            address: parsedUser.address || '',
+            password: '',
+            confirmPassword: ''
+          });
           setError('');
-          console.log("Loaded from localStorage:", parsedUser);
         }
 
         if (!token) {
@@ -57,9 +79,14 @@ const ProfilePage = () => {
         }
 
         const data = await response.json();
-        console.log("Fetched from API:", data);
-
         setUserData(data);
+        setFormData({
+          name: data.name || '',
+          email: data.email || '',
+          address: data.address || '',
+          password: '',
+          confirmPassword: ''
+        });
         localStorage.setItem('user', JSON.stringify(data));
         setError('');
       } catch (err) {
@@ -77,6 +104,60 @@ const ProfilePage = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login', { replace: true });
+  };
+
+  const handleEditClick = () => {
+    setEditMode(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      console.log('Attempting profile update...');
+      
+      if (formData.password && formData.password !== formData.confirmPassword) {
+        setUpdateError('Passwords do not match');
+        return;
+      }
+  
+      const updateData = {
+        name: formData.name,
+        email: formData.email,
+        address: formData.address,
+        ...(formData.password && { password: formData.password })
+      };
+  
+      console.log('Prepared update data:', updateData);
+  
+      const response = await updateProfile(updateData);
+      console.log('Full response:', response); // Log full response
+      
+      if (!response || !response.customer) {
+        throw new Error(response?.message || 'Invalid response from server');
+      }
+  
+      setUserData(response.customer);
+      localStorage.setItem('user', JSON.stringify(response.customer));
+      
+      setUpdateSuccess(true);
+      setEditMode(false);
+      setUpdateError(''); // Clear any previous errors
+    } catch (err) {
+      console.error('Update failed:', err);
+      setUpdateError(
+        err.message || 
+        err.response?.data?.error || 
+        'Failed to update profile. Please try again.'
+      );
+      setUpdateSuccess(false);
+    }
   };
 
   if (loading) {
@@ -109,56 +190,140 @@ const ProfilePage = () => {
             </Alert>
           )}
 
+          {updateSuccess && (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              Profile updated successfully!
+            </Alert>
+          )}
+
+          {updateError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {updateError}
+            </Alert>
+          )}
+
           {userData ? (
             <>
-              <Typography variant="h3" gutterBottom sx={{ 
-                fontWeight: 'bold',
-                color: 'primary.main',
-                mb: 4
-              }}>
-                My Profile
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h3" sx={{ 
+                  fontWeight: 'bold',
+                  color: 'primary.main'
+                }}>
+                  My Profile
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  onClick={handleEditClick}
+                  disabled={editMode}
+                >
+                  Edit Profile
+                </Button>
+              </Box>
               
-              <List sx={{ width: '100%' }}>
-                <ListItem>
-                  <ListItemText 
-                    primary="Name" 
-                    secondary={userData.name || 'Not provided'} 
-                    secondaryTypographyProps={{ variant: 'h6' }}
-                  />
-                </ListItem>
-                <Divider component="li" />
-                
-                <ListItem>
-                  <ListItemText 
-                    primary="Email" 
-                    secondary={userData.email || 'Not provided'} 
-                    secondaryTypographyProps={{ variant: 'h6' }}
-                  />
-                </ListItem>
-                <Divider component="li" />
-                
-                <ListItem>
-                  <ListItemText 
-                    primary="Address" 
-                    secondary={userData.address || 'Not provided'} 
-                    secondaryTypographyProps={{ variant: 'h6' }}
-                  />
-                </ListItem>
-                <Divider component="li" />
-                
-                <ListItem>
-                  <ListItemText 
-                    primary="Member Since" 
-                    secondary={userData.createdAt 
-                      ? new Date(userData.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric', month: 'long', day: 'numeric'
-                        }) 
-                      : 'Not available'}
-                    secondaryTypographyProps={{ variant: 'h6' }}
-                  />
-                </ListItem>
-              </List>
+              {editMode ? (
+                <Dialog open={editMode} onClose={() => setEditMode(false)}>
+                  <DialogTitle>Edit Profile</DialogTitle>
+                  <DialogContent>
+                    <TextField
+                      margin="dense"
+                      label="Name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      fullWidth
+                      variant="outlined"
+                      sx={{ mb: 2 }}
+                    />
+                    <TextField
+                      margin="dense"
+                      label="Email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      fullWidth
+                      variant="outlined"
+                      sx={{ mb: 2 }}
+                    />
+                    <TextField
+                      margin="dense"
+                      label="Address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      fullWidth
+                      variant="outlined"
+                      sx={{ mb: 2 }}
+                    />
+                    <TextField
+                      margin="dense"
+                      label="New Password"
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      fullWidth
+                      variant="outlined"
+                      sx={{ mb: 2 }}
+                      placeholder="Leave blank to keep current password"
+                    />
+                    <TextField
+                      margin="dense"
+                      label="Confirm Password"
+                      name="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setEditMode(false)}>Cancel</Button>
+                    <Button onClick={handleUpdateProfile} variant="contained">Save</Button>
+                  </DialogActions>
+                </Dialog>
+              ) : (
+                <List sx={{ width: '100%' }}>
+                  <ListItem>
+                    <ListItemText 
+                      primary="Name" 
+                      secondary={userData.name || 'Not provided'} 
+                      secondaryTypographyProps={{ variant: 'h6' }}
+                    />
+                  </ListItem>
+                  <Divider component="li" />
+                  
+                  <ListItem>
+                    <ListItemText 
+                      primary="Email" 
+                      secondary={userData.email || 'Not provided'} 
+                      secondaryTypographyProps={{ variant: 'h6' }}
+                    />
+                  </ListItem>
+                  <Divider component="li" />
+                  
+                  <ListItem>
+                    <ListItemText 
+                      primary="Address" 
+                      secondary={userData.address || 'Not provided'} 
+                      secondaryTypographyProps={{ variant: 'h6' }}
+                    />
+                  </ListItem>
+                  <Divider component="li" />
+                  
+                  <ListItem>
+                    <ListItemText 
+                      primary="Member Since" 
+                      secondary={userData.createdAt 
+                        ? new Date(userData.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                          }) 
+                        : 'Not available'}
+                      secondaryTypographyProps={{ variant: 'h6' }}
+                    />
+                  </ListItem>
+                </List>
+              )}
 
               <Box sx={{ 
                 display: 'flex', 
