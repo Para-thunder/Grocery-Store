@@ -49,7 +49,7 @@ router.patch("/orders/:id", updateOrder);
 router.delete("/orders/:id", deleteOrder);
 
 // Payment routes
-router.get('/payment/:orderId', getPayment);
+router.get('/payment', getPayment);
 router.patch('/payment/:orderId', updatePayment);
 
 // Delivery routes

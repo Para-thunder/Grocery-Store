@@ -4,6 +4,7 @@ const Product = require("../models/Product"); // Adjust the path to your Product
 const Category = require("../models/Category"); // Adjust the path to your Category model
 // Adjust the path to your Inventory model
 const { sequelize } = require('../models'); // Adjust the path to your sequelize instance 
+const { Op } = require('sequelize');
 const getProducts = (req, res) => {
   const { page = 1, limit = 10 } = req.query; // Default to page 1, 10 items per page
   const offset = (page - 1) * limit;
@@ -200,6 +201,39 @@ const getProductById = (req, res) => {
     res.json(result[0]); // Return the first (and only) product
   });
 };
+const searchProductsByName = (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Product name is required for search' });
+  }
+
+  const query = `
+    SELECT p.*, c.category_name, i.available_quantity 
+    FROM Products p
+    JOIN Categories c ON p.category_id = c.category_id
+    JOIN Inventory i ON p.product_id = i.product_id
+    WHERE p.name LIKE '%' + ? + '%'
+  `;
+
+  sql.query(connectionString, query, [name], (err, rows) => {
+    if (err) {
+      console.error("Error searching products:", err);
+      return res.status(500).json({ 
+        error: "Failed to search products", 
+        details: err.message 
+      });
+    }
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ 
+        message: "No products found matching the search term" 
+      });
+    }
+
+    return res.json(rows);
+  });
+};
 
 // Export all functions as an object
 module.exports = {
@@ -207,5 +241,5 @@ module.exports = {
   updateProduct,
   createProduct,
   getProducts,
-  getProductById
+  searchProductsByName
 };
