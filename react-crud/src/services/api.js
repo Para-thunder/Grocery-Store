@@ -83,3 +83,12 @@ export const updateProfile = async (profileData) => {
     throw error.response?.data?.error || 'Failed to update profile';
   }
 };
+export const searchProductsByName = async (query) => {
+  try {
+    const response = await API.get(`/products/search?name=${encodeURIComponent(query)}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error searching products:", error);
+    throw error.response?.data?.error || 'Failed to search products';
+  }
+};

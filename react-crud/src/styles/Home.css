@@ -473,3 +473,38 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   min-height: calc(100vh - 40px); /* Adjust based on your padding */
 }
+/* Add these styles to your Home.css */
+
+/* Top Selling Fire Icon Styling */
+.dashboard-card.top-selling-card .card-icon {
+  color: #FF5722; /* Vibrant orange-red */
+  background: linear-gradient(to bottom, #d51212, #FF9800);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 8px rgba(255,87,34,0.3);
+  font-size: 2.2rem;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card.top-selling-card:hover .card-icon {
+  transform: scale(1.15);
+  text-shadow: 0 0 12px rgba(208, 54, 8, 0.5);
+}
+
+/* Shopping Policies Document Icon Styling */
+.dashboard-card.policies-card .card-icon {
+  color: #eeee31; /* Bright blue */
+  background: linear-gradient(to bottom, #1378ca, #00BCD4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 8px rgba(33,150,243,0.3);
+  font-size: 2.2rem;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card.policies-card:hover .card-icon {
+  transform: scale(1.15) rotate(5deg);
+  text-shadow: 0 0 12px rgba(33,150,243,0.5);
+}

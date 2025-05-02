@@ -12,7 +12,9 @@ import CategoryProductsPage from './pages/CategoryProductsPage';
 import ProfilePage from './pages/ProfilePage'; // Add this import
 import { CartProvider } from './context/CartContext';
 import CartPage from './pages/CartPage';
-
+import SearchPage from './pages/SearchPage';
+import TopSellingPage from './pages/TopSellingPage';
+import PoliciesPage from './pages/PoliciesPage';
 function App() {
   return (
     <CartProvider>
@@ -22,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/orders" element={<OrdersPage />} />
@@ -29,6 +32,8 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<ProfilePage />} /> {/* Add this route */}
             <Route path="/categories/:categoryId/products" element={<CategoryProductsPage />} />
+            <Route path="/top-selling" element={<TopSellingPage />} />
+            <Route path="/policies" element={<PoliciesPage />} />
           </Routes>
         </div>
       </Router>

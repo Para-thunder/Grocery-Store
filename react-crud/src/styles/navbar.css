@@ -79,3 +79,55 @@
 .dropdown-link:hover {
   background-color: #7F52C5; /* Light purple on hover */
 }
+/* Add these styles to your existing navbar.css */
+.navbar-search {
+  position: relative;
+  margin: 0 20px;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.search-results .MuiListItem-root {
+  padding: 8px 16px;
+}
+
+.search-results .MuiListItem-root:hover {
+  background-color: #f5f5f5;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .navbar-search {
+    margin: 0 10px;
+    flex-grow: 1;
+  }
+  
+  .navbar-search .MuiTextField-root {
+    width: 100%;
+  }
+  
+  .navbar-links {
+    gap: 10px;
+  }
+}
