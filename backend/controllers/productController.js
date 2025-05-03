@@ -234,12 +234,87 @@ const searchProductsByName = (req, res) => {
     return res.json(rows);
   });
 };
+const filterByPrice = (req, res) => {
+  const { minPrice = 0, maxPrice = Number.MAX_VALUE } = req.query; // Default to no price limit
 
+  const query = `
+    SELECT p.*, c.category_name, i.available_quantity 
+    FROM Products p
+    JOIN Categories c ON p.category_id = c.category_id
+    JOIN Inventory i ON p.product_id = i.product_id
+    WHERE p.price BETWEEN ? AND ?
+    ORDER BY p.price ASC
+  `;
+
+  sql.query(connectionString, query, [minPrice, maxPrice], (err, rows) => {
+    if (err) {
+      console.error("Error filtering products by price:", err);
+      return res.status(500).json({ 
+        error: "Failed to filter products by price", 
+        details: err.message 
+      });
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).json({ 
+        message: "No products found in the specified price range" 
+      });
+    }
+
+    return res.json(rows);
+  });
+};
+const getDeal = (req, res) => {
+  const { productIds, discountPercentage } = req.query;
+
+  // Validate input
+  if (!productIds || productIds.split(',').length !== 3) {
+    return res.status(400).json({ error: "Exactly three product IDs are required to get a deal" });
+  }
+
+  if (!discountPercentage || discountPercentage <= 0 || discountPercentage > 100) {
+    return res.status(400).json({ error: "A valid discount percentage (1-100) is required" });
+  }
+
+  const productIdsArray = productIds.split(',').map(id => parseInt(id.trim()));
+
+  const query = `
+    SELECT p.product_id, p.name, p.price
+    FROM Products p
+    WHERE p.product_id IN (?, ?, ?)
+  `;
+
+  sql.query(connectionString, query, productIdsArray, (err, rows) => {
+    if (err) {
+      console.error("Error fetching products for deal:", err);
+      return res.status(500).json({ error: "Failed to fetch deal", details: err.message });
+    }
+
+    if (rows.length !== 3) {
+      return res.status(404).json({ error: "One or more product IDs are invalid" });
+    }
+
+    // Calculate the total price and apply the discount
+    const totalPrice = rows.reduce((sum, product) => sum + product.price, 0);
+    const discountedPrice = totalPrice - (totalPrice * (discountPercentage / 100));
+
+    const deal = {
+      products: rows,
+      totalPrice: totalPrice.toFixed(2),
+      discountedPrice: discountedPrice.toFixed(2),
+      discountPercentage,
+    };
+
+    return res.status(200).json(deal);
+  });
+};
 // Export all functions as an object
 module.exports = {
   deleteProduct,
   updateProduct,
   createProduct,
   getProducts,
-  searchProductsByName
+  searchProductsByName,
+  filterByPrice,
+  getDeal
 };

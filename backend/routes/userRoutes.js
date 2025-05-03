@@ -6,7 +6,9 @@ const { authenticate } = require("../middlewares/authmiddleware");
 // Import all controller functions needed for the store frontend
 const {
   getProducts,
-  searchProductsByName
+  searchProductsByName,
+  filterByPrice,
+  getDeal
 } = require("../controllers/productController");
 
 const {
@@ -31,6 +33,8 @@ router.get('/payment', getPayment);
 // ----------------------------
 router.get("/products", getProducts);
 router.get("/products/search", searchProductsByName);
+router.get("/products/filter-by-price", filterByPrice);
+router.get("/products/deal", getDeal);
 //router.get("/products/:id", getProductById);
 router.get("/categories", getCategory);
 router.get("/categories/:categoryId/products", getProductsByCategory);
