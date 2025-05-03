@@ -265,14 +265,18 @@ const filterByPrice = (req, res) => {
   });
 };
 const getDeal = (req, res) => {
-  const { productIds, discountPercentage } = req.query;
+  const { productIds } = req.query;
+  let { discountPercentage } = req.query;
+
+  // Set default discount to 20% if not provided
+  discountPercentage = discountPercentage ? parseFloat(discountPercentage) : 20;
 
   // Validate input
   if (!productIds || productIds.split(',').length !== 3) {
     return res.status(400).json({ error: "Exactly three product IDs are required to get a deal" });
   }
 
-  if (!discountPercentage || discountPercentage <= 0 || discountPercentage > 100) {
+  if (discountPercentage <= 0 || discountPercentage > 100) {
     return res.status(400).json({ error: "A valid discount percentage (1-100) is required" });
   }
 
