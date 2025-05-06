@@ -15,6 +15,7 @@ import CartPage from './pages/CartPage';
 import SearchPage from './pages/SearchPage';
 import TopSellingPage from './pages/TopSellingPage';
 import PoliciesPage from './pages/PoliciesPage';
+import DealsPage from './pages/DealsPage';
 function App() {
   return (
     <CartProvider>
@@ -34,6 +35,7 @@ function App() {
             <Route path="/categories/:categoryId/products" element={<CategoryProductsPage />} />
             <Route path="/top-selling" element={<TopSellingPage />} />
             <Route path="/policies" element={<PoliciesPage />} />
+            <Route path="/deals" element={<DealsPage />} />
           </Routes>
         </div>
       </Router>

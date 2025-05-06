@@ -92,3 +92,37 @@ export const searchProductsByName = async (query) => {
     throw error.response?.data?.error || 'Failed to search products';
   }
 };
+// Add these functions to your api.js file
+
+// Filter products by price range
+// Make sure your filterByPrice function in api.js looks like this:
+// In your api.js file
+export const filterByPrice = async (minPrice, maxPrice) => {
+  try {
+    const response = await fetch(`/api/products/filter-by-price?minPrice=${minPrice}&maxPrice=${maxPrice}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || 'Failed to filter products');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in filterByPrice:', error);
+    throw error;
+  }
+};
+// Get a deal for 3 selected products
+export const getDeal = async (productIds, discountPercentage = 20) => {
+  try {
+    const response = await fetch(`/api/products/deal?productIds=${productIds}&discountPercentage=${discountPercentage}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create deal');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getDeal:', error);
+    throw error;
+  }
+};

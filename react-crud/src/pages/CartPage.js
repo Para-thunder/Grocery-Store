@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Button, Typography, Card, CardContent, Grid, Box, Divider, CircularProgress,Container } from '@mui/material';
+import { Button, Typography, Card, CardContent, Grid, Box, Divider, CircularProgress, Container, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircleOutline } from '@mui/icons-material';
+import { CheckCircleOutline, LocalOffer } from '@mui/icons-material';
 
 const CartPage = () => {
   const { cart, removeFromCart, clearCart } = useCart();
@@ -10,6 +10,7 @@ const CartPage = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Use the discounted prices for the total calculation
   const totalPrice = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
@@ -90,10 +91,29 @@ const CartPage = () => {
                       <Grid item xs={6}>
                         <Typography variant="h6" component="div">
                           {item.name}
+                          {item.isBundle && (
+                            <Chip
+                              icon={<LocalOffer sx={{ fontSize: 16 }} />}
+                              label={`${item.bundleDiscount}% OFF`}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 1, height: 20, fontSize: '0.7rem' }}
+                            />
+                          )}
                         </Typography>
-                        <Typography color="text.secondary">
-                          ${item.price.toFixed(2)} × {item.quantity}
-                        </Typography>
+                        
+                        {item.isBundle ? (
+                          <Typography color="text.secondary">
+                            <span style={{ textDecoration: 'line-through', marginRight: '8px' }}>
+                              ${item.originalPrice.toFixed(2)}
+                            </span>
+                            ${item.price.toFixed(2)} × {item.quantity}
+                          </Typography>
+                        ) : (
+                          <Typography color="text.secondary">
+                            ${item.price.toFixed(2)} × {item.quantity}
+                          </Typography>
+                        )}
                       </Grid>
                       <Grid item xs={4} sx={{ textAlign: 'right' }}>
                         <Typography variant="h6">
@@ -137,7 +157,7 @@ const CartPage = () => {
                   
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                     <Typography variant="h6">Total:</Typography>
-                    <Typography variant="h6">${totalPrice.toFixed(2)}</Typography>
+                    <Typography variant="h6">${(totalPrice + 0.50).toFixed(2)}</Typography>
                   </Box>
 
                   <Button
